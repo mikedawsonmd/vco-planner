@@ -2518,13 +2518,30 @@
                             theme = s.theme;
                         if (s.view === "timeline" || s.view === "list")
                             view = s.view;
+                        if (Array.isArray(s.stageF)) {
+                            const sf = s.stageF.filter((k) => k in STAGES);
+                            if (sf.length) stageF = new Set(sf);
+                        }
+                        if (Array.isArray(s.typeF)) {
+                            const tf = s.typeF.filter((k) => k in TYPES);
+                            if (tf.length) typeF = new Set(tf);
+                        }
+                        if (typeof s.favOnly === "boolean")
+                            favOnly = s.favOnly;
                     } catch (e) {}
                 }
                 applyTheme();
                 render();
             }
             function saveState() {
-                const v = JSON.stringify({ favs: [...favs], theme, view });
+                const v = JSON.stringify({
+                    favs: [...favs],
+                    theme,
+                    view,
+                    stageF: [...stageF],
+                    typeF: [...typeF],
+                    favOnly,
+                });
                 if (hasLS) {
                     try {
                         localStorage.setItem(KEY, v);
@@ -2617,6 +2634,7 @@
                 stageF = new Set(Object.keys(STAGES));
                 typeF = new Set(Object.keys(TYPES));
                 render();
+                saveState();
             }
 
             function renderFilters() {
@@ -2634,6 +2652,7 @@
                 sr.querySelector("[data-sall]").onclick = () => {
                     stageF = new Set(Object.keys(STAGES));
                     render();
+                    saveState();
                 };
                 sr.querySelectorAll("[data-s]").forEach(
                     (b) =>
@@ -2649,6 +2668,7 @@
                                     stageF = new Set(Object.keys(STAGES));
                             }
                             render();
+                            saveState();
                         }),
                 );
 
@@ -2666,6 +2686,7 @@
                 tr.querySelector("[data-tall]").onclick = () => {
                     typeF = new Set(Object.keys(TYPES));
                     render();
+                    saveState();
                 };
                 tr.querySelectorAll("[data-t]").forEach(
                     (b) =>
@@ -2679,6 +2700,7 @@
                                     typeF = new Set(Object.keys(TYPES));
                             }
                             render();
+                            saveState();
                         }),
                 );
 
@@ -2715,6 +2737,7 @@
                 fc.onclick = () => {
                     favOnly = !favOnly;
                     render();
+                    saveState();
                 };
             }
             document.getElementById("segTl").onclick = () => {
