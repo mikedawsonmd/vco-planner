@@ -1,0 +1,17 @@
+{
+  "name": "Vegan Camp Out Planner",
+  "short_name": "VCO Planner",
+  "description": "Unofficial Vegan Camp Out timeline: every stage in one view, heart your favourites, spot clashes.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0d0d10",
+  "theme_color": "#0d0d10",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230d0d10'/%3E%3Cpath d='M256 420s-150-98-200-192C24 166 64 100 130 100c38 0 68 20 86 48l40 32 40-32c18-28 48-48 86-48 66 0 106 66 74 128-50 94-200 192-200 192z' fill='%23ef4437'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
