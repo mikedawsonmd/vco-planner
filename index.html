@@ -37,7 +37,6 @@
                 --px-per-min: 3.6;
                 --lane-h: 100px;
                 --ruler-h: 48px;
-                --label-w: 132px;
             }
             [data-theme="light"] {
                 --ink: #f4f2ec;
@@ -568,7 +567,6 @@
                     transparent
                 );
                 display: flex;
-                margin-left: var(--label-w);
             }
             .tick {
                 flex: 0 0 auto;
@@ -603,24 +601,24 @@
             /* lanes */
             .lane {
                 display: flex;
-                height: var(--lane-h);
+                flex-direction: column;
                 position: relative;
             }
             .lane + .lane {
                 border-top: 1px solid var(--line-soft);
+                margin-top: 12px;
+                padding-top: 12px;
             }
             .lane-label {
                 position: sticky;
                 left: 0;
                 z-index: 15;
-                flex: 0 0 var(--label-w);
-                width: var(--label-w);
-                background: linear-gradient(90deg, var(--ink) 82%, transparent);
+                width: fit-content;
+                background: var(--ink);
                 display: flex;
-                flex-direction: column;
-                justify-content: center;
-                padding: 0 12px 0 18px;
-                gap: 3px;
+                align-items: center;
+                gap: 8px;
+                padding: 0 12px 8px 2px;
             }
             .lane-label .nm {
                 font-family: "Bricolage Grotesque";
@@ -638,11 +636,10 @@
                 width: 18px;
                 height: 4px;
                 border-radius: 2px;
-                margin-bottom: 1px;
             }
             .lane-track {
                 position: relative;
-                flex: 1;
+                height: var(--lane-h);
             }
 
             /* vertical gridlines painted on track via bg */
@@ -1155,7 +1152,6 @@
                 :root {
                     --px-per-min: 3.2;
                     --lane-h: 92px;
-                    --label-w: 110px;
                 }
                 .lane-label .nm {
                     font-size: 13px;
@@ -2476,13 +2472,6 @@
                         "--px-per-min",
                     ),
                 );
-            const LBW = () =>
-                parseFloat(
-                    getComputedStyle(document.documentElement).getPropertyValue(
-                        "--label-w",
-                    ),
-                );
-
             /* ---------------- STORAGE ----------------
    Persistence layers, best first:
    1. localStorage — GitHub Pages / any real hosting
@@ -2825,7 +2814,7 @@
                 let needle = "";
                 if (needleT !== null) {
                     const liveNow = scrub === null;
-                    needle = `<div class="needle ${liveNow ? "" : "scrubbed"}" id="needle" style="left:calc(var(--label-w) + ${(needleT - minT) * pxm}px)">
+                    needle = `<div class="needle ${liveNow ? "" : "scrubbed"}" id="needle" style="left:${(needleT - minT) * pxm}px">
       <div class="line"></div>
       <div class="ndock">
         <button class="head" id="needleHead" aria-label="Drag to scrub through the day">${liveNow ? `<span class="dot"></span>${fmtM(live.mins)}` : fmtM(needleT)}</button>
@@ -2843,9 +2832,7 @@
                 if (needleT !== null && scrolledDay !== day) {
                     tl.scrollLeft = Math.max(
                         0,
-                        LBW() +
-                            (needleT - minT) * pxm -
-                            tl.clientWidth * 0.35,
+                        (needleT - minT) * pxm - tl.clientWidth * 0.35,
                     );
                 }
                 scrolledDay = day;
@@ -2877,14 +2864,14 @@
                         head.onpointermove = (mv) => {
                             if (!scrubbing) return;
                             const left =
-                                inner.getBoundingClientRect().left + LBW();
+                                inner.getBoundingClientRect().left;
                             let t = minT + (mv.clientX - left) / pxm;
                             t = Math.max(
                                 minT,
                                 Math.min(maxT, Math.round(t / 5) * 5),
                             );
                             scrub = t;
-                            nd.style.left = `calc(var(--label-w) + ${(t - minT) * pxm}px)`;
+                            nd.style.left = `${(t - minT) * pxm}px`;
                             nd.classList.add("scrubbed");
                             head.textContent = fmtM(t);
                             tl.querySelectorAll(".blk").forEach((b) =>
