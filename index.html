@@ -106,6 +106,7 @@
                 word-wrap: normal;
                 direction: ltr;
                 -webkit-font-feature-settings: "liga";
+                font-feature-settings: "liga";
                 -webkit-font-smoothing: antialiased;
             }
 
@@ -815,6 +816,114 @@
                 opacity: 0.18;
                 pointer-events: none;
             }
+            .blk.past {
+                opacity: 0.35;
+                filter: saturate(0.4);
+            }
+            .lv-card.past {
+                opacity: 0.4;
+                filter: saturate(0.4);
+            }
+            .blk.hit {
+                outline: 2px solid var(--red);
+                outline-offset: 1.5px;
+            }
+
+            /* now needle / time scrubber */
+            .needle {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                z-index: 14;
+            }
+            .needle .line {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: -1px;
+                width: 2px;
+                background: var(--red);
+                opacity: 0.85;
+            }
+            /* clears a band under the ruler for the needle's time pill */
+            .tl-inner.has-needle .ruler {
+                margin-bottom: 34px;
+            }
+            .needle .ndock {
+                position: sticky;
+                top: var(--ruler-h);
+                z-index: 2;
+                width: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 8px;
+            }
+            .needle .head {
+                flex: 0 0 auto;
+                background: var(--red-strong);
+                color: #fff;
+                border: none;
+                font-family: "IBM Plex Mono";
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 0.04em;
+                padding: 6px 11px;
+                border-radius: 999px;
+                cursor: grab;
+                touch-action: none;
+                user-select: none;
+                -webkit-user-select: none;
+                white-space: nowrap;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                box-shadow: var(--shadow);
+            }
+            .needle .head:active {
+                cursor: grabbing;
+            }
+            .needle .head .dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: #fff;
+                animation: npulse 2s infinite;
+            }
+            @keyframes npulse {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.25;
+                }
+            }
+            .needle.scrubbed .line {
+                background: var(--paper);
+            }
+            .needle.scrubbed .head {
+                background: var(--paper);
+                color: var(--ink);
+            }
+            .needle .backnow {
+                flex: 0 0 auto;
+                background: var(--raise);
+                color: var(--paper);
+                border: 1.5px solid var(--line);
+                font-family: "IBM Plex Mono";
+                font-size: 10px;
+                font-weight: 600;
+                letter-spacing: 0.04em;
+                padding: 5px 10px;
+                border-radius: 999px;
+                cursor: pointer;
+                white-space: nowrap;
+            }
+            .livemark {
+                color: var(--red);
+                font-weight: 600;
+            }
 
             .now-hint {
                 position: absolute;
@@ -1061,6 +1170,7 @@
             @media (prefers-reduced-motion: reduce) {
                 * {
                     transition: none !important;
+                    animation: none !important;
                 }
             }
         </style>
@@ -1204,6 +1314,40 @@
                 SAT: "Saturday",
                 SUN: "Sunday",
             };
+
+            /* Festival runs Thu 13 – Sun 16 August 2026 */
+            const FEST_MONTH = 7; // August (0-indexed)
+            const FEST_YEAR = 2026;
+            const DAY_DATES = { THU: 13, FRI: 14, SAT: 15, SUN: 16 };
+            const LATE_CUTOFF = 300; // before 05:00 counts as the previous festival day (afterparties run past midnight)
+
+            function festNow() {
+                const n = new Date();
+                let mins = n.getHours() * 60 + n.getMinutes();
+                const d = new Date(n);
+                if (mins < LATE_CUTOFF) {
+                    d.setDate(d.getDate() - 1);
+                    mins += 1440;
+                }
+                if (
+                    d.getFullYear() !== FEST_YEAR ||
+                    d.getMonth() !== FEST_MONTH
+                )
+                    return null;
+                const dayKey = Object.keys(DAY_DATES).find(
+                    (k) => DAY_DATES[k] === d.getDate(),
+                );
+                return dayKey ? { day: dayKey, mins } : null;
+            }
+            function isPast(e) {
+                // Date normalises minute overflow, so events ending past 24:00 work
+                return (
+                    new Date(FEST_YEAR, FEST_MONTH, DAY_DATES[e.day], 0, e.e) <=
+                    new Date()
+                );
+            }
+            const fmtM = (m) =>
+                `${String(Math.floor(m / 60) % 24).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 
             /* ---------------- DATA [day, stage, start, end, title, sub, typeOverride?] ---------------- */
             const RAW = [
@@ -2313,7 +2457,10 @@
             });
 
             /* ---------------- STATE ---------------- */
-            let day = "SAT";
+            let day = festNow()?.day || "SAT"; // during the festival, open on today
+            let scrub = null; // scrubber time in minutes, null = follow live time
+            let scrubbing = false; // true while the needle is being dragged
+            let scrolledDay = null; // last day auto-scrolled to the needle
             let stageF = new Set(Object.keys(STAGES));
             let typeF = new Set(Object.keys(TYPES));
             let favOnly = false;
@@ -2327,6 +2474,12 @@
                 parseFloat(
                     getComputedStyle(document.documentElement).getPropertyValue(
                         "--px-per-min",
+                    ),
+                );
+            const LBW = () =>
+                parseFloat(
+                    getComputedStyle(document.documentElement).getPropertyValue(
+                        "--label-w",
                     ),
                 );
 
@@ -2405,7 +2558,8 @@
                 document.documentElement.dataset.theme = theme;
                 const b = document.getElementById("themeToggle");
                 const icon = document.getElementById("themeIcon");
-                icon.textContent = theme === "dark" ? "light_mode" : "dark_mode";
+                icon.textContent =
+                    theme === "dark" ? "light_mode" : "dark_mode";
                 b.setAttribute(
                     "aria-label",
                     theme === "dark"
@@ -2437,13 +2591,15 @@
 
             /* ---------------- RENDER ---------------- */
             function renderDaybar() {
+                const liveDay = festNow()?.day;
                 document.getElementById("daybar").innerHTML = DAYS.map((d) => {
                     const n = EVENTS.filter((e) => e.day === d).length;
-                    return `<button class="day ${d === day ? "active" : ""}" data-d="${d}">${DAY_LONG[d]}<small>${n} events</small></button>`;
+                    return `<button class="day ${d === day ? "active" : ""}" data-d="${d}">${DAY_LONG[d]}<small>${n} events${d === liveDay ? ` · <span class="livemark">now</span>` : ""}</small></button>`;
                 }).join("");
                 document.querySelectorAll(".day").forEach(
                     (b) =>
                         (b.onclick = () => {
+                            if (day !== b.dataset.d) scrub = null;
                             day = b.dataset.d;
                             render();
                         }),
@@ -2620,6 +2776,13 @@
                 maxT = Math.ceil(maxT / 30) * 30;
                 const span = maxT - minT;
 
+                // live needle: only on the festival day that is happening now
+                const live = festNow();
+                const showNeedle = live && live.day === day;
+                const needleT = showNeedle
+                    ? Math.max(minT, Math.min(maxT, scrub ?? live.mins))
+                    : null;
+
                 // ruler: a tick every 30 min, hour ticks labelled
                 let ruler = `<div class="ruler" style="width:${span * pxm}px">`;
                 for (let t = minT; t <= maxT; t += 30) {
@@ -2644,7 +2807,9 @@
                         const isFav = favs.has(e.id),
                             isClash = !!cm[e.id];
                         const slim = w < 130;
-                        blocks += `<div class="blk ${isFav ? "fav" : ""} ${isClash ? "clash" : ""} ${slim ? "slim" : ""}" data-id="${e.id}"
+                        const hit =
+                            needleT !== null && e.s <= needleT && needleT < e.e;
+                        blocks += `<div class="blk ${isFav ? "fav" : ""} ${isClash ? "clash" : ""} ${slim ? "slim" : ""} ${isPast(e) ? "past" : ""} ${hit ? "hit" : ""}" data-id="${e.id}" data-s="${e.s}" data-e="${e.e}"
         style="--stage:${sInfo.color}; left:${left}px; width:${w - 4}px">
         <span class="t">${e.title}</span>
         ${slim ? "" : `<span class="m">${fmtT(e.start)}–${fmtT(e.end)}${e.sub ? " · " + e.sub : ""}</span>`}
@@ -2657,11 +2822,33 @@
     </div>`;
                 }
 
+                let needle = "";
+                if (needleT !== null) {
+                    const liveNow = scrub === null;
+                    needle = `<div class="needle ${liveNow ? "" : "scrubbed"}" id="needle" style="left:calc(var(--label-w) + ${(needleT - minT) * pxm}px)">
+      <div class="line"></div>
+      <div class="ndock">
+        <button class="head" id="needleHead" aria-label="Drag to scrub through the day">${liveNow ? `<span class="dot"></span>${fmtM(live.mins)}` : fmtM(needleT)}</button>
+        ${liveNow ? "" : `<button class="backnow" id="backNow">↩ back to now</button>`}
+      </div>
+    </div>`;
+                }
+
                 const keepX = tl.scrollLeft,
                     keepY = tl.scrollTop;
-                tl.innerHTML = `<div class="tl-inner">${ruler}${lanes}</div>`;
+                tl.innerHTML = `<div class="tl-inner ${needleT !== null ? "has-needle" : ""}">${ruler}${lanes}${needle}</div>`;
                 tl.scrollLeft = keepX;
                 tl.scrollTop = keepY;
+                // first time we land on the live day, bring the needle into view
+                if (needleT !== null && scrolledDay !== day) {
+                    tl.scrollLeft = Math.max(
+                        0,
+                        LBW() +
+                            (needleT - minT) * pxm -
+                            tl.clientWidth * 0.35,
+                    );
+                }
+                scrolledDay = day;
                 tl.querySelectorAll(".blk").forEach(
                     (b) => (b.onclick = () => openSheet(b.dataset.id)),
                 );
@@ -2672,6 +2859,70 @@
                             toggleFav(h.dataset.heart);
                         }),
                 );
+
+                const nd = document.getElementById("needle");
+                if (nd) {
+                    const head = document.getElementById("needleHead");
+                    const back = document.getElementById("backNow");
+                    if (back)
+                        back.onclick = () => {
+                            scrub = null;
+                            renderTimeline();
+                        };
+                    head.onpointerdown = (ev) => {
+                        ev.preventDefault();
+                        scrubbing = true;
+                        head.setPointerCapture(ev.pointerId);
+                        const inner = tl.querySelector(".tl-inner");
+                        head.onpointermove = (mv) => {
+                            if (!scrubbing) return;
+                            const left =
+                                inner.getBoundingClientRect().left + LBW();
+                            let t = minT + (mv.clientX - left) / pxm;
+                            t = Math.max(
+                                minT,
+                                Math.min(maxT, Math.round(t / 5) * 5),
+                            );
+                            scrub = t;
+                            nd.style.left = `calc(var(--label-w) + ${(t - minT) * pxm}px)`;
+                            nd.classList.add("scrubbed");
+                            head.textContent = fmtM(t);
+                            tl.querySelectorAll(".blk").forEach((b) =>
+                                b.classList.toggle(
+                                    "hit",
+                                    +b.dataset.s <= t && t < +b.dataset.e,
+                                ),
+                            );
+                        };
+                        head.onpointerup = head.onpointercancel = () => {
+                            scrubbing = false;
+                            // released close to real time? snap back to live
+                            const l = festNow();
+                            if (
+                                l &&
+                                l.day === day &&
+                                scrub !== null &&
+                                Math.abs(scrub - l.mins) <= 5
+                            )
+                                scrub = null;
+                            renderTimeline();
+                        };
+                    };
+                    // tap anywhere on the ruler to jump the scrubber there
+                    const rl = tl.querySelector(".ruler");
+                    rl.style.cursor = "pointer";
+                    rl.onclick = (cv) => {
+                        const t =
+                            minT +
+                            (cv.clientX - rl.getBoundingClientRect().left) /
+                                pxm;
+                        scrub = Math.max(
+                            minT,
+                            Math.min(maxT, Math.round(t / 5) * 5),
+                        );
+                        renderTimeline();
+                    };
+                }
             }
 
             function renderList(visible, cm) {
@@ -2694,7 +2945,7 @@
                     for (const e of evs) {
                         const isFav = favs.has(e.id),
                             clashes = cm[e.id];
-                        html += `<div class="lv-card ${isFav ? "fav" : ""}" data-id="${e.id}" style="--stage:${sInfo.color}">
+                        html += `<div class="lv-card ${isFav ? "fav" : ""} ${isPast(e) ? "past" : ""}" data-id="${e.id}" style="--stage:${sInfo.color}">
         <div class="lv-time">${fmtT(e.start)}<small>${fmtT(e.end)}</small></div>
         <div class="lv-body">
           <div class="lv-title">${e.title}</div>
@@ -2780,6 +3031,14 @@
             applyTheme();
             render();
             loadState();
+
+            /* Keep the live needle, past-greying and daybar marker fresh */
+            setInterval(() => {
+                if (!scrubbing) render();
+            }, 30000);
+            document.addEventListener("visibilitychange", () => {
+                if (!document.hidden && !scrubbing) render();
+            });
 
             /* Warn once if the browser blocks storage — favourites and offline
    caching silently fail in Brave-strict, private windows, etc. */
