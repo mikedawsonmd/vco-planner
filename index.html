@@ -1,962 +1,2821 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="Unofficial Vegan Camp Out planner: every stage on one timeline, heart your favourites, spot clashes. Works offline once loaded.">
-<meta name="theme-color" content="#0d0d10">
-<link rel="manifest" href="manifest.webmanifest">
-<title>VCO · Timeline Planner</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap');
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+        />
+        <meta
+            name="description"
+            content="Unofficial Vegan Camp Out planner: every stage on one timeline, heart your favourites, spot clashes. Works offline once loaded."
+        />
+        <meta name="theme-color" content="#0d0d10" />
+        <link rel="manifest" href="manifest.webmanifest" />
+        <title>VCO · Timeline Planner</title>
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap");
+            @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap");
 
-:root{
-  --ink:#0d0d10;
-  --surface:#15151b;
-  --raise:#1d1e25;
-  --line:#34353f;
-  --line-soft:#23242c;
-  --paper:#f5f3ec;
-  --muted:#a8a9b3;
-  --faint:#85868f;
-  --red:#ef4437;
-  --red-strong:#e8362b;
-  --red-soft:rgba(239,68,55,.14);
-  --amber:#f4c62e;
-  --amber-text:#f0d27a;
-  --fav-bg:linear-gradient(180deg, #261c1e, #1f181a);
-  --shadow:0 6px 18px rgba(0,0,0,.5);
+            :root {
+                --ink: #0d0d10;
+                --surface: #15151b;
+                --raise: #1d1e25;
+                --line: #34353f;
+                --line-soft: #23242c;
+                --paper: #f5f3ec;
+                --muted: #a8a9b3;
+                --faint: #85868f;
+                --red: #ef4437;
+                --red-strong: #e8362b;
+                --red-soft: rgba(239, 68, 55, 0.14);
+                --amber: #f4c62e;
+                --amber-text: #f0d27a;
+                --fav-bg: linear-gradient(180deg, #261c1e, #1f181a);
+                --shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
 
-  --px-per-min:3.6;
-  --lane-h:100px;
-  --ruler-h:48px;
-  --label-w:132px;
-}
-[data-theme="light"]{
-  --ink:#f4f2ec;
-  --surface:#ffffff;
-  --raise:#ffffff;
-  --line:#b9b6ac;
-  --line-soft:#dedbd2;
-  --paper:#17181d;
-  --muted:#494a54;
-  --faint:#6a6b74;
-  --red:#c9271c;
-  --red-strong:#c9271c;
-  --red-soft:rgba(201,39,28,.1);
-  --amber:#f4c62e;
-  --amber-text:#6e5600;
-  --fav-bg:linear-gradient(180deg, #fdeeec, #fce7e4);
-  --shadow:0 6px 18px rgba(40,35,25,.14);
-}
+                --px-per-min: 3.6;
+                --lane-h: 100px;
+                --ruler-h: 48px;
+                --label-w: 132px;
+            }
+            [data-theme="light"] {
+                --ink: #f4f2ec;
+                --surface: #ffffff;
+                --raise: #ffffff;
+                --line: #b9b6ac;
+                --line-soft: #dedbd2;
+                --paper: #17181d;
+                --muted: #494a54;
+                --faint: #6a6b74;
+                --red: #c9271c;
+                --red-strong: #c9271c;
+                --red-soft: rgba(201, 39, 28, 0.1);
+                --amber: #f4c62e;
+                --amber-text: #6e5600;
+                --fav-bg: linear-gradient(180deg, #fdeeec, #fce7e4);
+                --shadow: 0 6px 18px rgba(40, 35, 25, 0.14);
+            }
 
-*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-html,body{margin:0; background:var(--ink); color:var(--paper); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; overscroll-behavior-y:none;}
-body{transition:background .2s, color .2s;}
-button{font-family:inherit;}
-:focus-visible{outline:2.5px solid var(--red); outline-offset:2px; border-radius:6px;}
-::selection{background:var(--red); color:#fff;}
+            * {
+                box-sizing: border-box;
+                -webkit-tap-highlight-color: transparent;
+            }
+            html,
+            body {
+                margin: 0;
+                background: var(--ink);
+                color: var(--paper);
+                font-family: "Inter", sans-serif;
+                -webkit-font-smoothing: antialiased;
+                overscroll-behavior-y: none;
+            }
+            body {
+                transition:
+                    background 0.2s,
+                    color 0.2s;
+            }
+            button {
+                font-family: inherit;
+            }
+            :focus-visible {
+                outline: 2.5px solid var(--red);
+                outline-offset: 2px;
+                border-radius: 6px;
+            }
+            ::selection {
+                background: var(--red);
+                color: #fff;
+            }
 
-.disp{font-family:'Bricolage Grotesque',sans-serif;}
-.mono{font-family:'IBM Plex Mono',monospace;}
+            .disp {
+                font-family: "Bricolage Grotesque", sans-serif;
+            }
+            .mono {
+                font-family: "IBM Plex Mono", monospace;
+            }
+            .material-symbols-outlined {
+                font-family: "Material Symbols Outlined";
+                font-weight: normal;
+                font-style: normal;
+                line-height: 1;
+                letter-spacing: normal;
+                text-transform: none;
+                display: inline-block;
+                white-space: nowrap;
+                word-wrap: normal;
+                direction: ltr;
+                -webkit-font-feature-settings: "liga";
+                -webkit-font-smoothing: antialiased;
+            }
 
-/* ================= HEADER ================= */
-header{
-  padding:calc(14px + env(safe-area-inset-top)) 18px 0;
-  background:var(--ink);
-}
-.masthead{display:flex; align-items:center; justify-content:space-between; gap:12px;}
-.wordmark{font-family:'Bricolage Grotesque'; font-weight:800; font-size:23px; letter-spacing:-0.02em; line-height:1;}
-.wordmark em{font-style:normal; color:var(--red);}
-.theme-toggle{
-  border:1.5px solid var(--line); background:var(--surface); color:var(--paper); cursor:pointer;
-  border-radius:999px; padding:9px 15px; font-size:13.5px; font-weight:600;
-  display:flex; align-items:center; gap:8px; transition:.15s;
-}
-.theme-toggle:hover{border-color:var(--muted);}
+            /* ================= HEADER ================= */
+            header {
+                padding: calc(14px + env(safe-area-inset-top)) 18px 0;
+                background: var(--ink);
+            }
+            .masthead {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+            }
+            .wordmark {
+                font-family: "Bricolage Grotesque";
+                font-weight: 800;
+                font-size: 23px;
+                letter-spacing: -0.02em;
+                line-height: 1;
+            }
+            .wordmark em {
+                font-style: normal;
+                color: var(--red);
+            }
+            .theme-toggle {
+                border: 1.5px solid var(--line);
+                background: var(--surface);
+                color: var(--paper);
+                cursor: pointer;
+                border-radius: 999px;
+                width: 40px;
+                height: 40px;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: 0.15s;
+            }
+            .theme-toggle:hover {
+                border-color: var(--muted);
+            }
+            .theme-toggle .material-symbols-outlined {
+                font-size: 20px;
+            }
 
-.daybar{display:flex; gap:22px; margin-top:16px; border-bottom:1px solid var(--line); overflow-x:auto; scrollbar-width:none;}
-.daybar::-webkit-scrollbar{display:none;}
-.day{
-  background:none; border:none; padding:0 0 12px; cursor:pointer; position:relative; flex:0 0 auto;
-  color:var(--muted); font-family:'Bricolage Grotesque'; font-weight:700; font-size:17px; letter-spacing:.01em;
-  transition:color .15s;
-}
-.day small{display:block; font-family:'IBM Plex Mono'; font-weight:500; font-size:11px; color:var(--faint); letter-spacing:.06em; margin-top:3px;}
-.day.active{color:var(--paper);}
-.day.active::after{content:''; position:absolute; left:0; right:0; bottom:-1px; height:3px; background:var(--red);}
+            .daybar {
+                display: flex;
+                gap: 22px;
+                margin-top: 16px;
+                border-bottom: 1px solid var(--line);
+                overflow-x: auto;
+                scrollbar-width: none;
+            }
+            .daybar::-webkit-scrollbar {
+                display: none;
+            }
+            .day {
+                background: none;
+                border: none;
+                padding: 0 0 12px;
+                cursor: pointer;
+                position: relative;
+                flex: 0 0 auto;
+                color: var(--muted);
+                font-family: "Bricolage Grotesque";
+                font-weight: 700;
+                font-size: 17px;
+                letter-spacing: 0.01em;
+                transition: color 0.15s;
+            }
+            .day small {
+                display: block;
+                font-family: "IBM Plex Mono";
+                font-weight: 500;
+                font-size: 11px;
+                color: var(--faint);
+                letter-spacing: 0.06em;
+                margin-top: 3px;
+            }
+            .day.active {
+                color: var(--paper);
+            }
+            .day.active::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: -1px;
+                height: 3px;
+                background: var(--red);
+            }
 
-/* ================= TOOLBAR ================= */
-.toolbar{
-  display:flex; align-items:center; gap:9px; padding:10px 18px;
-  border-bottom:1px solid var(--line-soft); background:var(--ink);
-  overflow-x:auto; scrollbar-width:none;
-}
-.toolbar::-webkit-scrollbar{display:none;}
-.seg{display:flex; flex:0 0 auto; border:1.5px solid var(--line); border-radius:11px; overflow:hidden; background:var(--surface);}
-.seg-btn{
-  border:none; background:transparent; color:var(--muted); cursor:pointer;
-  padding:10px 15px; font-size:14px; font-weight:700; transition:.14s;
-}
-.seg-btn + .seg-btn{border-left:1.5px solid var(--line);}
-.seg-btn.on{background:var(--paper); color:var(--ink);}
-.toolbtn{
-  flex:0 0 auto; position:relative; border:1.5px solid var(--line); background:var(--surface); color:var(--paper);
-  cursor:pointer; border-radius:11px; padding:10px 15px; font-size:14px; font-weight:700;
-  display:inline-flex; align-items:center; gap:8px; transition:.15s; white-space:nowrap;
-}
-.toolbtn svg{width:17px; height:17px;}
-.toolbtn:hover{border-color:var(--muted);}
-.toolbtn.on{background:var(--paper); color:var(--ink); border-color:var(--paper);}
-.badge{
-  position:absolute; top:-7px; right:-7px; min-width:20px; height:20px; border-radius:999px;
-  background:var(--red-strong); color:#fff; font-family:'IBM Plex Mono'; font-size:11px; font-weight:600;
-  display:flex; align-items:center; justify-content:center; padding:0 5px;
-  border:2px solid var(--ink);
-}
-.heartbtn .heart-ic{width:17px; height:17px; color:var(--red);}
-.heartbtn .favcount{
-  font-family:'IBM Plex Mono'; font-size:12px; font-weight:600; background:var(--raise);
-  border:1px solid var(--line); border-radius:999px; padding:2px 8px; color:var(--muted);
-}
-.heartbtn.on{background:var(--red-strong); border-color:var(--red-strong); color:#fff;}
-.heartbtn.on .heart-ic{color:#fff;}
-.heartbtn.on .favcount{background:rgba(255,255,255,.18); border-color:transparent; color:#fff;}
-.heart-ic{width:14px; height:14px; display:inline-block;}
-.clash-flag{flex:0 0 auto; color:var(--amber-text); font-weight:600; font-size:11.5px; letter-spacing:.04em; display:none;}
-.clash-flag.show{display:inline;}
+            /* ================= TOOLBAR ================= */
+            .toolbar {
+                display: flex;
+                align-items: center;
+                gap: 9px;
+                padding: 10px 18px;
+                border-bottom: 1px solid var(--line-soft);
+                background: var(--ink);
+                overflow-x: auto;
+                scrollbar-width: none;
+            }
+            .toolbar::-webkit-scrollbar {
+                display: none;
+            }
+            .seg {
+                display: flex;
+                flex: 0 0 auto;
+                border: 1.5px solid var(--line);
+                border-radius: 11px;
+                overflow: hidden;
+                background: var(--surface);
+            }
+            .seg-btn {
+                border: none;
+                background: transparent;
+                color: var(--muted);
+                cursor: pointer;
+                padding: 10px 15px;
+                font-size: 14px;
+                font-weight: 700;
+                transition: 0.14s;
+            }
+            .seg-btn + .seg-btn {
+                border-left: 1.5px solid var(--line);
+            }
+            .seg-btn.on {
+                background: var(--paper);
+                color: var(--ink);
+            }
+            .toolbtn {
+                flex: 0 0 auto;
+                position: relative;
+                border: 1.5px solid var(--line);
+                background: var(--surface);
+                color: var(--paper);
+                cursor: pointer;
+                border-radius: 11px;
+                padding: 10px 15px;
+                font-size: 14px;
+                font-weight: 700;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                transition: 0.15s;
+                white-space: nowrap;
+            }
+            .toolbtn svg {
+                width: 17px;
+                height: 17px;
+            }
+            .toolbtn:hover {
+                border-color: var(--muted);
+            }
+            .toolbtn.on {
+                background: var(--paper);
+                color: var(--ink);
+                border-color: var(--paper);
+            }
+            .badge {
+                position: absolute;
+                top: -7px;
+                right: -7px;
+                min-width: 20px;
+                height: 20px;
+                border-radius: 999px;
+                background: var(--red-strong);
+                color: #fff;
+                font-family: "IBM Plex Mono";
+                font-size: 11px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 5px;
+                border: 2px solid var(--ink);
+            }
+            .heartbtn .heart-ic {
+                width: 17px;
+                height: 17px;
+                color: var(--red);
+            }
+            .heartbtn .favcount {
+                font-family: "IBM Plex Mono";
+                font-size: 12px;
+                font-weight: 600;
+                background: var(--raise);
+                border: 1px solid var(--line);
+                border-radius: 999px;
+                padding: 2px 8px;
+                color: var(--muted);
+            }
+            .heartbtn.on {
+                background: var(--red-strong);
+                border-color: var(--red-strong);
+                color: #fff;
+            }
+            .heartbtn.on .heart-ic {
+                color: #fff;
+            }
+            .heartbtn.on .favcount {
+                background: rgba(255, 255, 255, 0.18);
+                border-color: transparent;
+                color: #fff;
+            }
+            .heart-ic {
+                width: 14px;
+                height: 14px;
+                display: inline-block;
+            }
+            .clash-flag {
+                flex: 0 0 auto;
+                color: var(--amber-text);
+                font-weight: 600;
+                font-size: 11.5px;
+                letter-spacing: 0.04em;
+                display: none;
+            }
+            .clash-flag.show {
+                display: inline;
+            }
 
-/* ================= FILTER PANEL ================= */
-.panel{
-  padding:13px 18px 14px; display:flex; flex-direction:column; gap:10px;
-  border-bottom:1px solid var(--line-soft); background:var(--surface);
-}
-.panel[hidden]{display:none;}
-.deckrow{display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; align-items:center;}
-.deckrow::-webkit-scrollbar{display:none;}
-.deck-label{flex:0 0 auto; font-family:'IBM Plex Mono'; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); width:52px;}
-.pill{
-  flex:0 0 auto; border:1.5px solid var(--line); background:var(--ink); color:var(--muted);
-  border-radius:999px; padding:8px 14px; font-size:13.5px; font-weight:600; cursor:pointer; transition:.14s;
-  display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
-}
-.pill:hover{border-color:var(--muted);}
-.pill .swatch{width:9px; height:9px; border-radius:2.5px;}
-.pill.on{background:var(--paper); color:var(--ink); border-color:var(--paper);}
-.pill.on .swatch{outline:1.5px solid rgba(0,0,0,.25);}
-.panel-foot{display:flex; align-items:center; justify-content:space-between; gap:12px;}
-.statusline{font-family:'IBM Plex Mono'; font-size:11.5px; color:var(--faint); letter-spacing:.04em;}
-.statusline b{color:var(--paper); font-weight:600;}
-.resetbtn{
-  border:1.5px solid var(--line); background:transparent; color:var(--muted); cursor:pointer;
-  border-radius:9px; padding:8px 13px; font-size:12.5px; font-weight:600; transition:.14s;
-}
-.resetbtn:hover{color:var(--paper); border-color:var(--muted);}
+            /* ================= FILTER PANEL ================= */
+            .panel {
+                padding: 13px 18px 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                border-bottom: 1px solid var(--line-soft);
+                background: var(--surface);
+            }
+            .panel[hidden] {
+                display: none;
+            }
+            .deckrow {
+                display: flex;
+                gap: 8px;
+                overflow-x: auto;
+                scrollbar-width: none;
+                align-items: center;
+            }
+            .deckrow::-webkit-scrollbar {
+                display: none;
+            }
+            .deck-label {
+                flex: 0 0 auto;
+                font-family: "IBM Plex Mono";
+                font-size: 10.5px;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: var(--faint);
+                width: 52px;
+            }
+            .pill {
+                flex: 0 0 auto;
+                border: 1.5px solid var(--line);
+                background: var(--ink);
+                color: var(--muted);
+                border-radius: 999px;
+                padding: 8px 14px;
+                font-size: 13.5px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: 0.14s;
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                white-space: nowrap;
+            }
+            .pill:hover {
+                border-color: var(--muted);
+            }
+            .pill .swatch {
+                width: 9px;
+                height: 9px;
+                border-radius: 2.5px;
+            }
+            .pill.on {
+                background: var(--paper);
+                color: var(--ink);
+                border-color: var(--paper);
+            }
+            .pill.on .swatch {
+                outline: 1.5px solid rgba(0, 0, 0, 0.25);
+            }
+            .panel-foot {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+            }
+            .statusline {
+                font-family: "IBM Plex Mono";
+                font-size: 11.5px;
+                color: var(--faint);
+                letter-spacing: 0.04em;
+            }
+            .statusline b {
+                color: var(--paper);
+                font-weight: 600;
+            }
+            .resetbtn {
+                border: 1.5px solid var(--line);
+                background: transparent;
+                color: var(--muted);
+                cursor: pointer;
+                border-radius: 9px;
+                padding: 8px 13px;
+                font-size: 12.5px;
+                font-weight: 600;
+                transition: 0.14s;
+            }
+            .resetbtn:hover {
+                color: var(--paper);
+                border-color: var(--muted);
+            }
 
-/* ================= LIST VIEW ================= */
-.lv{
-  overflow:auto; max-height:calc(100vh - 210px);
-  padding:0 18px 60px; max-width:680px; margin:0 auto;
-}
-.lv-stagehead{
-  display:flex; align-items:center; gap:10px; margin:0 0 10px;
-  position:sticky; top:0; z-index:5; background:var(--ink); padding:20px 0 8px;
-}
-.lv-stagehead .bar{width:22px; height:5px; border-radius:3px; background:var(--stage);}
-.lv-stagehead .nm{font-family:'Bricolage Grotesque'; font-size:19px; font-weight:800; letter-spacing:-0.01em;}
-.lv-stagehead .ct{font-size:11px; color:var(--faint); margin-left:auto;}
-.lv-card{
-  display:flex; gap:12px; align-items:flex-start; cursor:pointer;
-  background:var(--raise); border:1px solid var(--line); border-left:4px solid var(--stage, var(--line));
-  border-radius:12px; padding:13px 12px 12px 14px; margin-bottom:9px; position:relative;
-  transition:border-color .14s;
-}
-.lv-card:hover{border-color:var(--muted);}
-.lv-card.fav{background:var(--fav-bg); border-color:var(--red); border-left-color:var(--red);}
-.lv-time{font-family:'IBM Plex Mono'; font-size:14px; font-weight:600; min-width:52px; line-height:1.4;}
-.lv-time small{display:block; font-size:11px; color:var(--faint); font-weight:500;}
-.lv-body{flex:1; min-width:0;}
-.lv-title{font-family:'Bricolage Grotesque'; font-size:17px; font-weight:700; line-height:1.18; letter-spacing:-0.01em;}
-.lv-sub{font-size:13.5px; color:var(--muted); margin-top:3px; line-height:1.4;}
-.lv-clash{
-  margin-top:7px; display:inline-flex; align-items:center; gap:6px;
-  font-family:'IBM Plex Mono'; font-size:11px; font-weight:600; letter-spacing:.06em;
-  color:var(--amber-text); background:rgba(244,198,46,.1); border:1px solid rgba(180,140,10,.5);
-  border-radius:7px; padding:4px 9px;
-}
-.lv-card .blk-heart{position:static; transform:none; flex:0 0 auto; margin-top:2px;}
-.lv-card .blk-heart:active{transform:scale(.85);}
+            /* ================= LIST VIEW ================= */
+            .lv {
+                overflow: auto;
+                max-height: calc(100vh - 210px);
+                padding: 0 18px 60px;
+                max-width: 680px;
+                margin: 0 auto;
+            }
+            .lv-stagehead {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin: 0 0 10px;
+                position: sticky;
+                top: 0;
+                z-index: 5;
+                background: var(--ink);
+                padding: 20px 0 8px;
+            }
+            .lv-stagehead .bar {
+                width: 22px;
+                height: 5px;
+                border-radius: 3px;
+                background: var(--stage);
+            }
+            .lv-stagehead .nm {
+                font-family: "Bricolage Grotesque";
+                font-size: 19px;
+                font-weight: 800;
+                letter-spacing: -0.01em;
+            }
+            .lv-stagehead .ct {
+                font-size: 11px;
+                color: var(--faint);
+                margin-left: auto;
+            }
+            .lv-card {
+                display: flex;
+                gap: 12px;
+                align-items: flex-start;
+                cursor: pointer;
+                background: var(--raise);
+                border: 1px solid var(--line);
+                border-left: 4px solid var(--stage, var(--line));
+                border-radius: 12px;
+                padding: 13px 12px 12px 14px;
+                margin-bottom: 9px;
+                position: relative;
+                transition: border-color 0.14s;
+            }
+            .lv-card:hover {
+                border-color: var(--muted);
+            }
+            .lv-card.fav {
+                background: var(--fav-bg);
+                border-color: var(--red);
+                border-left-color: var(--red);
+            }
+            .lv-time {
+                font-family: "IBM Plex Mono";
+                font-size: 14px;
+                font-weight: 600;
+                min-width: 52px;
+                line-height: 1.4;
+            }
+            .lv-time small {
+                display: block;
+                font-size: 11px;
+                color: var(--faint);
+                font-weight: 500;
+            }
+            .lv-body {
+                flex: 1;
+                min-width: 0;
+            }
+            .lv-title {
+                font-family: "Bricolage Grotesque";
+                font-size: 17px;
+                font-weight: 700;
+                line-height: 1.18;
+                letter-spacing: -0.01em;
+            }
+            .lv-sub {
+                font-size: 13.5px;
+                color: var(--muted);
+                margin-top: 3px;
+                line-height: 1.4;
+            }
+            .lv-clash {
+                margin-top: 7px;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                font-family: "IBM Plex Mono";
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 0.06em;
+                color: var(--amber-text);
+                background: rgba(244, 198, 46, 0.1);
+                border: 1px solid rgba(180, 140, 10, 0.5);
+                border-radius: 7px;
+                padding: 4px 9px;
+            }
+            .lv-card .blk-heart {
+                position: static;
+                transform: none;
+                flex: 0 0 auto;
+                margin-top: 2px;
+            }
+            .lv-card .blk-heart:active {
+                transform: scale(0.85);
+            }
 
-/* ================= TIMELINE ================= */
-.tl-wrap{position:relative;}
-.tl{
-  overflow:auto; max-height:calc(100vh - 210px); position:relative;
-  scrollbar-width:thin; scrollbar-color:var(--line) transparent;
-}
-.tl-inner{position:relative; width:max-content; min-width:100%;}
+            /* ================= TIMELINE ================= */
+            .tl-wrap {
+                position: relative;
+            }
+            .tl {
+                overflow: auto;
+                max-height: calc(100vh - 210px);
+                position: relative;
+                scrollbar-width: thin;
+                scrollbar-color: var(--line) transparent;
+            }
+            .tl-inner {
+                position: relative;
+                width: max-content;
+                min-width: 100%;
+            }
 
-/* ruler */
-.ruler{
-  position:sticky; top:0; z-index:20; height:var(--ruler-h);
-  background:linear-gradient(180deg, var(--ink) 78%, transparent);
-  display:flex; margin-left:var(--label-w);
-}
-.tick{
-  flex:0 0 auto; position:relative; height:100%;
-  font-family:'IBM Plex Mono'; font-size:12px; font-weight:600; color:var(--muted);
-}
-.tick span{position:absolute; left:0; top:12px; transform:translateX(-50%);}
-.tick::after{content:''; position:absolute; left:0; top:32px; width:1px; height:8px; background:var(--line);}
-.tick.half::after{height:4px; top:36px; background:var(--line-soft);}
+            /* ruler */
+            .ruler {
+                position: sticky;
+                top: 0;
+                z-index: 20;
+                height: var(--ruler-h);
+                background: linear-gradient(
+                    180deg,
+                    var(--ink) 78%,
+                    transparent
+                );
+                display: flex;
+                margin-left: var(--label-w);
+            }
+            .tick {
+                flex: 0 0 auto;
+                position: relative;
+                height: 100%;
+                font-family: "IBM Plex Mono";
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--muted);
+            }
+            .tick span {
+                position: absolute;
+                left: 0;
+                top: 12px;
+                transform: translateX(-50%);
+            }
+            .tick::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 32px;
+                width: 1px;
+                height: 8px;
+                background: var(--line);
+            }
+            .tick.half::after {
+                height: 4px;
+                top: 36px;
+                background: var(--line-soft);
+            }
 
-/* lanes */
-.lane{display:flex; height:var(--lane-h); position:relative;}
-.lane + .lane{border-top:1px solid var(--line-soft);}
-.lane-label{
-  position:sticky; left:0; z-index:15; flex:0 0 var(--label-w); width:var(--label-w);
-  background:linear-gradient(90deg, var(--ink) 82%, transparent);
-  display:flex; flex-direction:column; justify-content:center; padding:0 12px 0 18px; gap:3px;
-}
-.lane-label .nm{font-family:'Bricolage Grotesque'; font-weight:700; font-size:15px; line-height:1.15; letter-spacing:.01em;}
-.lane-label .ct{font-family:'IBM Plex Mono'; font-size:10.5px; color:var(--faint);}
-.lane-label .bar{width:18px; height:4px; border-radius:2px; margin-bottom:1px;}
-.lane-track{position:relative; flex:1;}
+            /* lanes */
+            .lane {
+                display: flex;
+                height: var(--lane-h);
+                position: relative;
+            }
+            .lane + .lane {
+                border-top: 1px solid var(--line-soft);
+            }
+            .lane-label {
+                position: sticky;
+                left: 0;
+                z-index: 15;
+                flex: 0 0 var(--label-w);
+                width: var(--label-w);
+                background: linear-gradient(90deg, var(--ink) 82%, transparent);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                padding: 0 12px 0 18px;
+                gap: 3px;
+            }
+            .lane-label .nm {
+                font-family: "Bricolage Grotesque";
+                font-weight: 700;
+                font-size: 15px;
+                line-height: 1.15;
+                letter-spacing: 0.01em;
+            }
+            .lane-label .ct {
+                font-family: "IBM Plex Mono";
+                font-size: 10.5px;
+                color: var(--faint);
+            }
+            .lane-label .bar {
+                width: 18px;
+                height: 4px;
+                border-radius: 2px;
+                margin-bottom: 1px;
+            }
+            .lane-track {
+                position: relative;
+                flex: 1;
+            }
 
-/* vertical gridlines painted on track via bg */
-.lane-track{
-  background-image:repeating-linear-gradient(90deg, var(--line-soft) 0 1px, transparent 1px calc(var(--px-per-min) * 30));
-}
+            /* vertical gridlines painted on track via bg */
+            .lane-track {
+                background-image: repeating-linear-gradient(
+                    90deg,
+                    var(--line-soft) 0 1px,
+                    transparent 1px calc(var(--px-per-min) * 30)
+                );
+            }
 
-/* event blocks */
-.blk{
-  position:absolute; top:8px; bottom:8px; border-radius:11px; cursor:pointer;
-  background:var(--raise); border:1px solid var(--line);
-  padding:9px 40px 8px 12px; overflow:hidden; display:flex; flex-direction:column; justify-content:center; gap:3px;
-  transition:border-color .14s, transform .12s, box-shadow .14s;
-  border-left:4px solid var(--stage, var(--line));
-}
-.blk:hover{border-color:var(--muted); transform:translateY(-1px); z-index:5;}
-.blk .t{
-  font-family:'Bricolage Grotesque'; font-size:16px; font-weight:700; line-height:1.15; letter-spacing:-0.01em;
-  display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-}
-.blk .m{font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.blk.slim{padding-right:28px;}
-.blk.slim .t{-webkit-line-clamp:3; line-clamp:3; font-size:13.5px;}
-.blk.slim .blk-heart{top:4px; right:3px; transform:none; width:26px; height:26px;}
-.blk.slim .blk-heart svg{width:14px; height:14px;}
-.blk.slim .blk-heart:active{transform:scale(.85);}
-.blk.fav{background:var(--fav-bg); border-color:var(--red); border-left-color:var(--red);}
-.blk-heart{
-  position:absolute; top:50%; right:7px; transform:translateY(-50%);
-  width:34px; height:34px; border-radius:50%; border:none; background:transparent; cursor:pointer;
-  display:flex; align-items:center; justify-content:center; color:var(--faint); padding:0;
-  transition:color .13s, background .13s;
-}
-.blk-heart svg{width:18px; height:18px;}
-.blk-heart:hover{color:var(--paper); background:rgba(128,128,128,.14);}
-.blk-heart.on{color:var(--red);}
-.blk-heart:active{transform:translateY(-50%) scale(.85);}
-.blk-heart{
-  position:absolute; top:50%; right:6px; transform:translateY(-50%);
-  width:30px; height:30px; border-radius:50%; border:none; background:transparent; cursor:pointer;
-  display:flex; align-items:center; justify-content:center; color:var(--faint); padding:0;
-  transition:color .13s, background .13s;
-}
-.blk-heart svg{width:16px; height:16px;}
-.blk-heart:hover{color:var(--paper); background:rgba(255,255,255,.06);}
-.blk-heart.on{color:var(--red);}
-.blk-heart:active{transform:translateY(-50%) scale(.85);}
-.blk.clash{box-shadow:0 0 0 1.5px var(--amber) inset;}
-.blk.clash::before{
-  content:'CLASH'; position:absolute; top:0; left:0; background:var(--amber); color:#000;
-  font-family:'IBM Plex Mono'; font-size:8px; font-weight:600; letter-spacing:.08em; padding:2px 7px; border-radius:10px 0 8px 0;
-}
-.blk.dim{opacity:.18; pointer-events:none;}
+            /* event blocks */
+            .blk {
+                position: absolute;
+                top: 8px;
+                bottom: 8px;
+                border-radius: 11px;
+                cursor: pointer;
+                background: var(--raise);
+                border: 1px solid var(--line);
+                padding: 9px 40px 8px 12px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 3px;
+                transition:
+                    border-color 0.14s,
+                    transform 0.12s,
+                    box-shadow 0.14s;
+                border-left: 4px solid var(--stage, var(--line));
+            }
+            .blk:hover {
+                border-color: var(--muted);
+                transform: translateY(-1px);
+                z-index: 5;
+            }
+            .blk .t {
+                font-family: "Bricolage Grotesque";
+                font-size: 16px;
+                font-weight: 700;
+                line-height: 1.15;
+                letter-spacing: -0.01em;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            .blk .m {
+                font-family: "IBM Plex Mono";
+                font-size: 11px;
+                color: var(--muted);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .blk.slim {
+                padding-right: 28px;
+            }
+            .blk.slim .t {
+                -webkit-line-clamp: 3;
+                line-clamp: 3;
+                font-size: 13.5px;
+            }
+            .blk.slim .blk-heart {
+                top: 4px;
+                right: 3px;
+                transform: none;
+                width: 26px;
+                height: 26px;
+            }
+            .blk.slim .blk-heart svg {
+                width: 14px;
+                height: 14px;
+            }
+            .blk.slim .blk-heart:active {
+                transform: scale(0.85);
+            }
+            .blk.fav {
+                background: var(--fav-bg);
+                border-color: var(--red);
+                border-left-color: var(--red);
+            }
+            .blk-heart {
+                position: absolute;
+                top: 50%;
+                right: 7px;
+                transform: translateY(-50%);
+                width: 34px;
+                height: 34px;
+                border-radius: 50%;
+                border: none;
+                background: transparent;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--faint);
+                padding: 0;
+                transition:
+                    color 0.13s,
+                    background 0.13s;
+            }
+            .blk-heart svg {
+                width: 18px;
+                height: 18px;
+            }
+            .blk-heart:hover {
+                color: var(--paper);
+                background: rgba(128, 128, 128, 0.14);
+            }
+            .blk-heart.on {
+                color: var(--red);
+            }
+            .blk-heart:active {
+                transform: translateY(-50%) scale(0.85);
+            }
+            .blk-heart {
+                position: absolute;
+                top: 50%;
+                right: 6px;
+                transform: translateY(-50%);
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                border: none;
+                background: transparent;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--faint);
+                padding: 0;
+                transition:
+                    color 0.13s,
+                    background 0.13s;
+            }
+            .blk-heart svg {
+                width: 16px;
+                height: 16px;
+            }
+            .blk-heart:hover {
+                color: var(--paper);
+                background: rgba(255, 255, 255, 0.06);
+            }
+            .blk-heart.on {
+                color: var(--red);
+            }
+            .blk-heart:active {
+                transform: translateY(-50%) scale(0.85);
+            }
+            .blk.clash {
+                box-shadow: 0 0 0 1.5px var(--amber) inset;
+            }
+            .blk.clash::before {
+                content: "CLASH";
+                position: absolute;
+                top: 0;
+                left: 0;
+                background: var(--amber);
+                color: #000;
+                font-family: "IBM Plex Mono";
+                font-size: 8px;
+                font-weight: 600;
+                letter-spacing: 0.08em;
+                padding: 2px 7px;
+                border-radius: 10px 0 8px 0;
+            }
+            .blk.dim {
+                opacity: 0.18;
+                pointer-events: none;
+            }
 
-.now-hint{
-  position:absolute; right:14px; bottom:12px; z-index:22;
-  background:var(--raise); border:1px solid var(--line); color:var(--muted);
-  font-family:'IBM Plex Mono'; font-size:10px; padding:7px 11px; border-radius:999px; letter-spacing:.06em;
-  display:flex; gap:7px; align-items:center; box-shadow:0 6px 18px rgba(0,0,0,.5);
-}
+            .now-hint {
+                position: absolute;
+                right: 14px;
+                bottom: 12px;
+                z-index: 22;
+                background: var(--raise);
+                border: 1px solid var(--line);
+                color: var(--muted);
+                font-family: "IBM Plex Mono";
+                font-size: 10px;
+                padding: 7px 11px;
+                border-radius: 999px;
+                letter-spacing: 0.06em;
+                display: flex;
+                gap: 7px;
+                align-items: center;
+                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+            }
 
-.empty-state{padding:70px 24px; text-align:center; color:var(--muted);}
-.empty-state .disp{font-size:20px; font-weight:700; color:var(--paper); margin-bottom:6px;}
+            .empty-state {
+                padding: 70px 24px;
+                text-align: center;
+                color: var(--muted);
+            }
+            .empty-state .disp {
+                font-size: 20px;
+                font-weight: 700;
+                color: var(--paper);
+                margin-bottom: 6px;
+            }
 
-/* ================= DETAIL SHEET ================= */
-.scrim{position:fixed; inset:0; background:rgba(6,6,8,.6); backdrop-filter:blur(3px); z-index:60; opacity:0; pointer-events:none; transition:opacity .2s;}.scrim.open{opacity:1; pointer-events:auto;}
-.sheet{
-  position:fixed; left:0; right:0; bottom:0; z-index:70;
-  background:var(--surface); border-top:1px solid var(--line); border-radius:20px 20px 0 0;
-  padding:14px 20px calc(24px + env(safe-area-inset-bottom));
-  transform:translateY(105%); transition:transform .26s cubic-bezier(.32,.72,.28,1);
-  max-width:560px; margin:0 auto;
-}
-.sheet.open{transform:translateY(0);}
-.grab{width:36px; height:4px; border-radius:2px; background:var(--line); margin:0 auto 16px;}
-.sheet .stage-chip{display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Mono'; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:10px;}
-.sheet .stage-chip i{width:9px; height:9px; border-radius:2.5px; display:inline-block;}
-.sheet h2{font-family:'Bricolage Grotesque'; font-weight:800; font-size:27px; line-height:1.08; margin:0 0 7px; letter-spacing:-0.015em;}
-.sheet .sub{color:var(--muted); font-size:15px; line-height:1.45; margin-bottom:14px;}
-.sheet .when{font-family:'IBM Plex Mono'; font-size:15px; color:var(--paper); display:flex; gap:10px; align-items:center; margin-bottom:16px;}
-.sheet .when .dur{color:var(--faint); font-size:12px;}
-.sheet .clashbox{background:rgba(244,198,46,.1); border:1.5px solid rgba(180,140,10,.55); border-radius:10px; padding:11px 13px; font-size:14px; color:var(--amber-text); margin-bottom:16px; line-height:1.55;}
-.sheet .clashbox b{color:var(--amber-text);}
-.favbtn{
-  width:100%; border-radius:12px; border:1.5px solid var(--line); background:var(--raise); color:var(--paper);
-  padding:15px; font-size:15.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;
-  transition:.15s;
-}
-.favbtn svg{width:19px; height:19px;}
-.favbtn.on{background:var(--red-strong); border-color:var(--red-strong); color:#fff;}
+            /* ================= DETAIL SHEET ================= */
+            .scrim {
+                position: fixed;
+                inset: 0;
+                background: rgba(6, 6, 8, 0.6);
+                backdrop-filter: blur(3px);
+                z-index: 60;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.2s;
+            }
+            .scrim.open {
+                opacity: 1;
+                pointer-events: auto;
+            }
+            .sheet {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 70;
+                background: var(--surface);
+                border-top: 1px solid var(--line);
+                border-radius: 20px 20px 0 0;
+                padding: 14px 20px calc(24px + env(safe-area-inset-bottom));
+                transform: translateY(105%);
+                transition: transform 0.26s cubic-bezier(0.32, 0.72, 0.28, 1);
+                max-width: 560px;
+                margin: 0 auto;
+            }
+            .sheet.open {
+                transform: translateY(0);
+            }
+            .grab {
+                width: 36px;
+                height: 4px;
+                border-radius: 2px;
+                background: var(--line);
+                margin: 0 auto 16px;
+            }
+            .sheet .stage-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                font-family: "IBM Plex Mono";
+                font-size: 11.5px;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: var(--muted);
+                margin-bottom: 10px;
+            }
+            .sheet .stage-chip i {
+                width: 9px;
+                height: 9px;
+                border-radius: 2.5px;
+                display: inline-block;
+            }
+            .sheet h2 {
+                font-family: "Bricolage Grotesque";
+                font-weight: 800;
+                font-size: 27px;
+                line-height: 1.08;
+                margin: 0 0 7px;
+                letter-spacing: -0.015em;
+            }
+            .sheet .sub {
+                color: var(--muted);
+                font-size: 15px;
+                line-height: 1.45;
+                margin-bottom: 14px;
+            }
+            .sheet .when {
+                font-family: "IBM Plex Mono";
+                font-size: 15px;
+                color: var(--paper);
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                margin-bottom: 16px;
+            }
+            .sheet .when .dur {
+                color: var(--faint);
+                font-size: 12px;
+            }
+            .sheet .clashbox {
+                background: rgba(244, 198, 46, 0.1);
+                border: 1.5px solid rgba(180, 140, 10, 0.55);
+                border-radius: 10px;
+                padding: 11px 13px;
+                font-size: 14px;
+                color: var(--amber-text);
+                margin-bottom: 16px;
+                line-height: 1.55;
+            }
+            .sheet .clashbox b {
+                color: var(--amber-text);
+            }
+            .favbtn {
+                width: 100%;
+                border-radius: 12px;
+                border: 1.5px solid var(--line);
+                background: var(--raise);
+                color: var(--paper);
+                padding: 15px;
+                font-size: 15.5px;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                transition: 0.15s;
+            }
+            .favbtn svg {
+                width: 19px;
+                height: 19px;
+            }
+            .favbtn.on {
+                background: var(--red-strong);
+                border-color: var(--red-strong);
+                color: #fff;
+            }
 
-/* storage-warning modal */
-.modal{
-  position:fixed; left:50%; top:50%; transform:translate(-50%,-46%); z-index:80;
-  width:calc(100% - 40px); max-width:420px; background:var(--surface);
-  border:1.5px solid var(--line); border-radius:18px; padding:22px 22px 20px;
-  box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .2s, transform .2s;
-}
-.modal.open{opacity:1; pointer-events:auto; transform:translate(-50%,-50%);}
-.modal .m-ic{width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center;
-  background:var(--red-soft); color:var(--red-strong); font-size:20px; margin-bottom:14px;}
-.modal h3{font-family:'Bricolage Grotesque'; font-weight:800; font-size:20px; line-height:1.15; margin:0 0 9px; letter-spacing:-0.01em;}
-.modal p{color:var(--muted); font-size:14.5px; line-height:1.5; margin:0 0 10px;}
-.modal p b{color:var(--paper); font-weight:600;}
-.modal .m-btn{
-  width:100%; margin-top:6px; border-radius:11px; border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
-  padding:13px; font-size:14.5px; font-weight:700; cursor:pointer; transition:.15s;
-}
-.modal .m-btn:hover{opacity:.9;}
+            /* storage-warning modal */
+            .modal {
+                position: fixed;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -46%);
+                z-index: 80;
+                width: calc(100% - 40px);
+                max-width: 420px;
+                background: var(--surface);
+                border: 1.5px solid var(--line);
+                border-radius: 18px;
+                padding: 22px 22px 20px;
+                box-shadow: var(--shadow);
+                opacity: 0;
+                pointer-events: none;
+                transition:
+                    opacity 0.2s,
+                    transform 0.2s;
+            }
+            .modal.open {
+                opacity: 1;
+                pointer-events: auto;
+                transform: translate(-50%, -50%);
+            }
+            .modal .m-ic {
+                width: 38px;
+                height: 38px;
+                border-radius: 11px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--red-soft);
+                color: var(--red-strong);
+                font-size: 20px;
+                margin-bottom: 14px;
+            }
+            .modal h3 {
+                font-family: "Bricolage Grotesque";
+                font-weight: 800;
+                font-size: 20px;
+                line-height: 1.15;
+                margin: 0 0 9px;
+                letter-spacing: -0.01em;
+            }
+            .modal p {
+                color: var(--muted);
+                font-size: 14.5px;
+                line-height: 1.5;
+                margin: 0 0 10px;
+            }
+            .modal p b {
+                color: var(--paper);
+                font-weight: 600;
+            }
+            .modal .m-btn {
+                width: 100%;
+                margin-top: 6px;
+                border-radius: 11px;
+                border: 1.5px solid var(--line);
+                background: var(--paper);
+                color: var(--ink);
+                padding: 13px;
+                font-size: 14.5px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: 0.15s;
+            }
+            .modal .m-btn:hover {
+                opacity: 0.9;
+            }
 
-@media (max-width:520px){
-  :root{--px-per-min:3.2; --lane-h:92px; --label-w:110px;}
-  .lane-label .nm{font-size:13px;}
-  .blk .t{font-size:14.5px;}
-  .deck-bottom{align-items:flex-start;}
-}
-@media (prefers-reduced-motion:reduce){
-  *{transition:none !important;}
-}
-</style>
-</head>
-<body>
+            @media (max-width: 520px) {
+                :root {
+                    --px-per-min: 3.2;
+                    --lane-h: 92px;
+                    --label-w: 110px;
+                }
+                .lane-label .nm {
+                    font-size: 13px;
+                }
+                .blk .t {
+                    font-size: 14.5px;
+                }
+                .deck-bottom {
+                    align-items: flex-start;
+                }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                * {
+                    transition: none !important;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="masthead">
+                <div class="wordmark">VCO <em>/ Planner</em></div>
+                <button
+                    class="theme-toggle"
+                    id="themeToggle"
+                    aria-label="Switch colour theme"
+                >
+                    <span class="material-symbols-outlined" id="themeIcon"
+                        >dark_mode</span
+                    >
+                </button>
+            </div>
+            <div class="daybar" id="daybar"></div>
+        </header>
 
-<header>
-  <div class="masthead">
-    <div class="wordmark">Vegan Camp Out <em>/ Planner</em></div>
-    <button class="theme-toggle" id="themeToggle" aria-label="Switch colour theme">☀︎ Light</button>
-  </div>
-  <div class="daybar" id="daybar"></div>
-</header>
+        <div class="toolbar">
+            <div class="seg" role="tablist" aria-label="View">
+                <button class="seg-btn" id="segTl" role="tab">Timeline</button>
+                <button class="seg-btn" id="segLv" role="tab">List</button>
+            </div>
+            <button
+                class="toolbtn"
+                id="filterBtn"
+                aria-expanded="false"
+                aria-controls="panel"
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                >
+                    <path d="M4 6h16M7 12h10M10 18h4" />
+                </svg>
+                Filters
+                <span class="badge" id="filterBadge" hidden></span>
+            </button>
+            <button
+                class="toolbtn heartbtn"
+                id="favCall"
+                aria-pressed="false"
+            ></button>
+            <span class="clash-flag mono" id="stClash"></span>
+        </div>
 
-<div class="toolbar">
-  <div class="seg" role="tablist" aria-label="View">
-    <button class="seg-btn" id="segTl" role="tab">Timeline</button>
-    <button class="seg-btn" id="segLv" role="tab">List</button>
-  </div>
-  <button class="toolbtn" id="filterBtn" aria-expanded="false" aria-controls="panel">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-    Filters
-    <span class="badge" id="filterBadge" hidden></span>
-  </button>
-  <button class="toolbtn heartbtn" id="favCall" aria-pressed="false"></button>
-  <span class="clash-flag mono" id="stClash"></span>
-</div>
+        <div class="panel" id="panel" hidden>
+            <div class="deckrow" id="stageRow">
+                <span class="deck-label">Stage</span>
+            </div>
+            <div class="deckrow" id="typeRow">
+                <span class="deck-label">Type</span>
+            </div>
+            <div class="panel-foot">
+                <span class="statusline"
+                    ><b id="stShown">0</b>&nbsp;events shown</span
+                >
+                <button class="resetbtn" id="resetBtn">Reset filters</button>
+            </div>
+        </div>
 
-<div class="panel" id="panel" hidden>
-  <div class="deckrow" id="stageRow"><span class="deck-label">Stage</span></div>
-  <div class="deckrow" id="typeRow"><span class="deck-label">Type</span></div>
-  <div class="panel-foot">
-    <span class="statusline"><b id="stShown">0</b>&nbsp;events shown</span>
-    <button class="resetbtn" id="resetBtn">Reset filters</button>
-  </div>
-</div>
+        <div class="tl-wrap">
+            <div class="tl" id="tl"></div>
+            <div class="lv" id="lv" hidden></div>
+        </div>
 
-<div class="tl-wrap">
-  <div class="tl" id="tl"></div>
-  <div class="lv" id="lv" hidden></div>
-</div>
+        <div class="scrim" id="scrim"></div>
+        <div class="sheet" id="sheet"></div>
 
-<div class="scrim" id="scrim"></div>
-<div class="sheet" id="sheet"></div>
+        <div
+            class="modal"
+            id="storageModal"
+            role="alertdialog"
+            aria-labelledby="smTitle"
+            aria-describedby="smBody"
+        >
+            <div class="m-ic">⚠️</div>
+            <h3 id="smTitle">Faves won't save in this browser</h3>
+            <p id="smBody">
+                This browser is blocking local storage, so your
+                <b>favourites</b> and the <b>offline mode</b> won't work here —
+                anything you heart will be lost when you close the tab.
+            </p>
+            <p>
+                This usually means a private/incognito window or a
+                privacy-focused browser like Brave. For the full experience,
+                open this page in <b>Chrome, Safari, or Firefox</b> (not in
+                private mode).
+            </p>
+            <button class="m-btn" id="smClose">Got it, continue anyway</button>
+        </div>
 
-<div class="modal" id="storageModal" role="alertdialog" aria-labelledby="smTitle" aria-describedby="smBody">
-  <div class="m-ic">⚠️</div>
-  <h3 id="smTitle">Faves won't save in this browser</h3>
-  <p id="smBody">This browser is blocking local storage, so your <b>favourites</b> and the <b>offline mode</b> won't work here — anything you heart will be lost when you close the tab.</p>
-  <p>This usually means a private/incognito window or a privacy-focused browser like Brave. For the full experience, open this page in <b>Chrome, Safari, or Firefox</b> (not in private mode).</p>
-  <button class="m-btn" id="smClose">Got it, continue anyway</button>
-</div>
+        <script>
+            /* ---------------- CONSTANTS ---------------- */
+            const HEART =
+                '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.9-10-9.6C.4 8.4 2.4 5 5.7 5c1.9 0 3.4 1 4.3 2.4L12 9l2-1.6C14.9 6 16.4 5 18.3 5c3.3 0 5.3 3.4 3.7 6.4C19.5 16.1 12 21 12 21z"/></svg>';
+            const HEART_O =
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.5-4.9-10-9.6C.4 8.4 2.4 5 5.7 5c1.9 0 3.4 1 4.3 2.4L12 9l2-1.6C14.9 6 16.4 5 18.3 5c3.3 0 5.3 3.4 3.7 6.4C19.5 16.1 12 21 12 21z"/></svg>';
 
-<script>
-/* ---------------- CONSTANTS ---------------- */
-const HEART = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.9-10-9.6C.4 8.4 2.4 5 5.7 5c1.9 0 3.4 1 4.3 2.4L12 9l2-1.6C14.9 6 16.4 5 18.3 5c3.3 0 5.3 3.4 3.7 6.4C19.5 16.1 12 21 12 21z"/></svg>';
-const HEART_O = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.5-4.9-10-9.6C.4 8.4 2.4 5 5.7 5c1.9 0 3.4 1 4.3 2.4L12 9l2-1.6C14.9 6 16.4 5 18.3 5c3.3 0 5.3 3.4 3.7 6.4C19.5 16.1 12 21 12 21z"/></svg>';
+            const STAGES = {
+                main: { name: "Main Stage", color: "#e8564c" },
+                music: { name: "Music Stage", color: "#e9b93a" },
+                jungle: { name: "The Jungle", color: "#57b46a" },
+                edu: { name: "Education", color: "#5aa9d6" },
+                mb: { name: "Mind & Body", color: "#a78bda" },
+                family: { name: "Family Area", color: "#ec8f4e" },
+                teen: { name: "Teen Tent", color: "#4fc9b8" },
+                wtf: { name: "We The Free", color: "#59d3e8" },
+                site: { name: "Around Site", color: "#9aa0ab" },
+            };
+            const TYPES = {
+                talks: "Talks",
+                music: "Live music",
+                dj: "DJ / Party",
+                wellness: "Wellness",
+                family: "Family & Teens",
+                activity: "Activities",
+            };
+            const TYPE_BY_STAGE = {
+                main: "talks",
+                music: "music",
+                jungle: "dj",
+                edu: "talks",
+                mb: "wellness",
+                family: "family",
+                teen: "family",
+                wtf: "dj",
+                site: "activity",
+            };
 
-const STAGES = {
-  main:   {name:"Main Stage",     color:"#e8564c"},
-  music:  {name:"Music Stage",    color:"#e9b93a"},
-  jungle: {name:"The Jungle",     color:"#57b46a"},
-  edu:    {name:"Education",      color:"#5aa9d6"},
-  mb:     {name:"Mind & Body",    color:"#a78bda"},
-  family: {name:"Family Area",    color:"#ec8f4e"},
-  teen:   {name:"Teen Tent",      color:"#4fc9b8"},
-  wtf:    {name:"We The Free",    color:"#59d3e8"},
-  site:   {name:"Around Site",    color:"#9aa0ab"},
-};
-const TYPES = {
-  talks:    "Talks",
-  music:    "Live music",
-  dj:       "DJ / Party",
-  wellness: "Wellness",
-  family:   "Family & Teens",
-  activity: "Activities",
-};
-const TYPE_BY_STAGE = { main:"talks", music:"music", jungle:"dj", edu:"talks", mb:"wellness", family:"family", teen:"family", wtf:"dj", site:"activity" };
+            const DAYS = ["THU", "FRI", "SAT", "SUN"];
+            const DAY_LONG = {
+                THU: "Thursday",
+                FRI: "Friday",
+                SAT: "Saturday",
+                SUN: "Sunday",
+            };
 
-const DAYS = ["THU","FRI","SAT","SUN"];
-const DAY_LONG = {THU:"Thursday",FRI:"Friday",SAT:"Saturday",SUN:"Sunday"};
+            /* ---------------- DATA [day, stage, start, end, title, sub, typeOverride?] ---------------- */
+            const RAW = [
+                // MAIN STAGE
+                ["SAT", "main", "12.35", "13.05", "Dr. Michael Klaper", ""],
+                ["SAT", "main", "13.45", "14.15", "Kiri Pritchard-McLean", ""],
+                ["SAT", "main", "14.55", "15.25", "George Monbiot", ""],
+                ["SAT", "main", "16.05", "16.35", "Juliet Gellatley", "Viva!"],
+                ["SAT", "main", "17.15", "17.45", "Lou Sanders", ""],
+                ["SAT", "main", "18.20", "19.00", "Mic the Vegan", ""],
+                ["SAT", "main", "19.40", "20.40", "Earthling Ed", ""],
+                [
+                    "SUN",
+                    "main",
+                    "12.10",
+                    "12.30",
+                    "Zack Polanski",
+                    "Green Party",
+                ],
+                [
+                    "SUN",
+                    "main",
+                    "12.35",
+                    "13.05",
+                    "Alissa White-Gluz & Doyle",
+                    "",
+                ],
+                ["SUN", "main", "13.45", "14.15", "The Happy Pear", ""],
+                ["SUN", "main", "14.55", "15.25", "Peter Egan", ""],
+                ["SUN", "main", "16.05", "17.05", "Moby", ""],
+                ["SUN", "main", "17.45", "18.15", "Diane Morgan", ""],
+                ["SUN", "main", "18.55", "19.25", "Akala", ""],
+                ["SUN", "main", "20.05", "20.40", "Henning When", ""],
+                // MUSIC STAGE
+                [
+                    "FRI",
+                    "music",
+                    "21.50",
+                    "24.00",
+                    "70's / 80's Party",
+                    "",
+                    "dj",
+                ],
+                [
+                    "SAT",
+                    "music",
+                    "12.00",
+                    "12.30",
+                    "Jason Bromley",
+                    "Pop / Rock",
+                ],
+                [
+                    "SAT",
+                    "music",
+                    "13.10",
+                    "13.40",
+                    "Taylor T",
+                    "Folk / Spiritual",
+                ],
+                [
+                    "SAT",
+                    "music",
+                    "14.20",
+                    "14.50",
+                    "Wood and Nails",
+                    "Alt-Rock / Emo",
+                ],
+                [
+                    "SAT",
+                    "music",
+                    "15.30",
+                    "16.00",
+                    "The Menstrual Cramps",
+                    "Punk",
+                ],
+                ["SAT", "music", "16.40", "17.10", "Tally Spear", "Pop / Rock"],
+                [
+                    "SAT",
+                    "music",
+                    "17.50",
+                    "18.20",
+                    "McDermott & North",
+                    "Indie / Rock",
+                ],
+                ["SAT", "music", "19.05", "19.35", "Macka B", "Reggae"],
+                ["SAT", "music", "20.45", "21.45", "JME", "Grime"],
+                [
+                    "SAT",
+                    "music",
+                    "21.50",
+                    "24.00",
+                    "Afterparty · Earthling Ed",
+                    "Techno",
+                    "dj",
+                ],
+                [
+                    "SUN",
+                    "music",
+                    "13.10",
+                    "13.40",
+                    "Fraser Morgan",
+                    "Folk / Punk",
+                ],
+                [
+                    "SUN",
+                    "music",
+                    "14.20",
+                    "14.50",
+                    "Lizzie Esau",
+                    "Alternative",
+                ],
+                ["SUN", "music", "15.30", "16.00", "Feldi", "Rap"],
+                ["SUN", "music", "17.10", "17.40", "Holysseus Fly", "Alt-Pop"],
+                [
+                    "SUN",
+                    "music",
+                    "18.20",
+                    "18.50",
+                    "Tara McDonald",
+                    "Dance / Pop",
+                ],
+                [
+                    "SUN",
+                    "music",
+                    "19.30",
+                    "20.00",
+                    "Delilah Bon",
+                    "Brat Punk / Nu-Metal",
+                ],
+                [
+                    "SUN",
+                    "music",
+                    "20.45",
+                    "21.30",
+                    "Bimini",
+                    "Pop / Electronic",
+                ],
+                [
+                    "SUN",
+                    "music",
+                    "21.50",
+                    "24.00",
+                    "Afterparty",
+                    "Rock / Metal / Alternative",
+                    "dj",
+                ],
+                // WE THE FREE
+                [
+                    "FRI",
+                    "wtf",
+                    "20.30",
+                    "23.00",
+                    "We The Free: RAVE",
+                    "DnB · UKG · Jungle",
+                ],
+                [
+                    "SAT",
+                    "wtf",
+                    "20.30",
+                    "23.00",
+                    "We The Free: DISCO",
+                    "All the classics",
+                ],
+                // THE JUNGLE
+                ["THU", "jungle", "15.45", "16.30", "Dubstep", "Lucas Brooks"],
+                ["THU", "jungle", "16.30", "17.15", "Jungle", "Lucas Brooks"],
+                ["THU", "jungle", "17.15", "18.15", "Gabber", "Club Will"],
+                ["THU", "jungle", "18.15", "19.00", "Trap", "Lucas Brooks"],
+                [
+                    "THU",
+                    "jungle",
+                    "19.00",
+                    "20.00",
+                    "QUEEN Party",
+                    "Elric Newby",
+                ],
+                [
+                    "THU",
+                    "jungle",
+                    "20.00",
+                    "21.00",
+                    "Progressive House",
+                    "Nawtystep",
+                ],
+                ["THU", "jungle", "21.00", "23.00", "R&B", "Tahnee Kaya"],
+                [
+                    "FRI",
+                    "jungle",
+                    "14.00",
+                    "15.00",
+                    "Afrobeats",
+                    "Lucas Brooks",
+                ],
+                [
+                    "FRI",
+                    "jungle",
+                    "15.00",
+                    "16.00",
+                    "Dub Reggae",
+                    "Lioness Power",
+                ],
+                ["FRI", "jungle", "16.00", "17.00", "Emo", "Chris Hines"],
+                ["FRI", "jungle", "17.00", "18.00", "Tech House", "Club Will"],
+                [
+                    "FRI",
+                    "jungle",
+                    "18.00",
+                    "19.00",
+                    "Drum and Bass",
+                    "George Martin · Carnism Debunked",
+                ],
+                [
+                    "FRI",
+                    "jungle",
+                    "19.00",
+                    "20.00",
+                    "Nu-Metal / Industrial",
+                    "Elric Newby",
+                ],
+                ["FRI", "jungle", "20.00", "20.55", "Pop", "Chris Hines"],
+                [
+                    "FRI",
+                    "jungle",
+                    "20.55",
+                    "24.00",
+                    "Punk",
+                    "Pop, Skate, Ska, Hardcore & Folk · Jordan Martin, VCO founder",
+                ],
+                [
+                    "SAT",
+                    "jungle",
+                    "14.00",
+                    "14.45",
+                    "Ska",
+                    "Lucas Brooks / Delroy Brooks",
+                ],
+                [
+                    "SAT",
+                    "jungle",
+                    "14.45",
+                    "15.45",
+                    "Reggae",
+                    "Lucas Brooks / Delroy Brooks",
+                ],
+                ["SAT", "jungle", "15.45", "16.45", "RnB", "Kevin The Vegan"],
+                ["SAT", "jungle", "16.45", "17.45", "Grime", "Lucas Brooks"],
+                [
+                    "SAT",
+                    "jungle",
+                    "17.45",
+                    "18.45",
+                    "House",
+                    "Lucas Brooks b2b Tahnee Kaya",
+                ],
+                [
+                    "SAT",
+                    "jungle",
+                    "18.45",
+                    "19.45",
+                    "Metalcore / Deathcore",
+                    "Soyknot · Chris Hines / David Ramms",
+                ],
+                [
+                    "SAT",
+                    "jungle",
+                    "19.45",
+                    "21.00",
+                    "Taylor Swift Party",
+                    "Emily Clare",
+                ],
+                ["SAT", "jungle", "21.00", "22.00", "Indie", "Ampslave"],
+                [
+                    "SAT",
+                    "jungle",
+                    "22.00",
+                    "24.00",
+                    "Drum and Bass",
+                    "VFC · Deccy b2b Lucas Brooks",
+                ],
+                [
+                    "SUN",
+                    "jungle",
+                    "14.00",
+                    "15.00",
+                    "Soulful / Funky House",
+                    "Lucas Brooks",
+                ],
+                ["SUN", "jungle", "15.00", "16.00", "Amapiano", "Lucas Brooks"],
+                ["SUN", "jungle", "16.00", "17.00", "Trance", "Club Will"],
+                ["SUN", "jungle", "17.00", "18.00", "Garage", "Nawtystep"],
+                [
+                    "SUN",
+                    "jungle",
+                    "18.00",
+                    "19.00",
+                    "Bassline / Speed Garage",
+                    "Deccy b2b Lucas Brooks",
+                ],
+                [
+                    "SUN",
+                    "jungle",
+                    "19.00",
+                    "20.00",
+                    "Metal",
+                    "Death / Black / Thrash / NWOBHM / Groove · Elric Newby",
+                ],
+                [
+                    "SUN",
+                    "jungle",
+                    "20.00",
+                    "21.00",
+                    "Soul / Funk / Disco",
+                    "DJ Beavs",
+                ],
+                [
+                    "SUN",
+                    "jungle",
+                    "21.00",
+                    "22.00",
+                    "High Contrast",
+                    "Drum and Bass",
+                ],
+                [
+                    "SUN",
+                    "jungle",
+                    "22.00",
+                    "24.00",
+                    "Hip-Hop",
+                    "Deccy / Kevin The Vegan",
+                ],
+                // EDUCATION
+                [
+                    "FRI",
+                    "edu",
+                    "16.50",
+                    "17.10",
+                    "Current Leaders & Future Policy Makers",
+                    "Sasha Jolliffe Yasawi (ETLIN) & Vanessa Hudson (AWP)",
+                ],
+                [
+                    "FRI",
+                    "edu",
+                    "17.20",
+                    "17.50",
+                    "Panel: Veganism and Politics",
+                    "Hosted by Sasha Jolliffe (ETLIN) + guests",
+                ],
+                [
+                    "FRI",
+                    "edu",
+                    "18.00",
+                    "18.30",
+                    "From Slaughter to Sanctuary",
+                    "Harbin SHS Animal Rescue · Slaughterhouse Survivors",
+                ],
+                [
+                    "FRI",
+                    "edu",
+                    "18.40",
+                    "19.10",
+                    "Five Years of Camp Beagle",
+                    "John Curtin & Sole Iriart",
+                ],
+                [
+                    "FRI",
+                    "edu",
+                    "19.20",
+                    "19.50",
+                    "Dogs & Cats in Vegan Households",
+                    "Vegan vet Dr Arielle Griffiths",
+                ],
+                [
+                    "FRI",
+                    "edu",
+                    "20.00",
+                    "20.30",
+                    "10 Years of VCO",
+                    "Jordan Martin & Ellis Goodridge",
+                ],
+                [
+                    "SAT",
+                    "edu",
+                    "09.40",
+                    "10.10",
+                    "\u201CPet\u201D Animals: The Forgotten Victims",
+                    "Illy Parrwood & Polly Foreman, Rescue Not Retail",
+                ],
+                ["SAT", "edu", "10.20", "10.50", "One", "Mel & Steve"],
+                [
+                    "SAT",
+                    "edu",
+                    "11.00",
+                    "11.30",
+                    "Ahimsa in Action",
+                    "Jamie Logan",
+                ],
+                [
+                    "SAT",
+                    "edu",
+                    "11.40",
+                    "12.10",
+                    "Animals Need Leaders",
+                    "Paul Bashir, Anonymous for the Voiceless",
+                ],
+                [
+                    "SAT",
+                    "edu",
+                    "12.20",
+                    "12.50",
+                    "Between Despair and Hope",
+                    "Tobias Leenaert",
+                ],
+                [
+                    "SAT",
+                    "edu",
+                    "13.00",
+                    "14.00",
+                    "Mental Health & Sustainable Advocacy",
+                    "Libby Peppiatt + guests · The Vegan Society",
+                ],
+                [
+                    "SAT",
+                    "edu",
+                    "14.00",
+                    "15.00",
+                    "Vegan-Inclusive Education",
+                    "Laura Diamond · The Vegan Society",
+                ],
+                [
+                    "SAT",
+                    "edu",
+                    "15.00",
+                    "16.00",
+                    "Vegan Nutrition and Myth-Busting",
+                    "Emily Angus · The Vegan Society",
+                ],
+                [
+                    "SAT",
+                    "edu",
+                    "16.10",
+                    "16.40",
+                    "Vegan Pet Food: A New Frontier",
+                    "Professor Andrew Knight",
+                ],
+                [
+                    "SAT",
+                    "edu",
+                    "16.40",
+                    "17.40",
+                    "Panel: Vegan Vets",
+                    "Brough · Knight · McGill · Rivers",
+                ],
+                [
+                    "SAT",
+                    "edu",
+                    "17.50",
+                    "18.20",
+                    "The Plant-Based School Food Revolution",
+                    "Flora Clemett & Alex Jemison",
+                ],
+                [
+                    "SAT",
+                    "edu",
+                    "18.20",
+                    "19.20",
+                    "The Beginning of the End of Factory Farming",
+                    "Rose Patterson & Michelle Farnham, Animal Rising",
+                ],
+                [
+                    "SAT",
+                    "edu",
+                    "19.20",
+                    "19.50",
+                    "Join Plant-Based Universities",
+                    "Ulysse Tonnelé Verjus",
+                ],
+                [
+                    "SAT",
+                    "edu",
+                    "20.00",
+                    "20.30",
+                    "Building Consistent Vegan Activism",
+                    "Oliver Loos",
+                ],
+                [
+                    "SUN",
+                    "edu",
+                    "10.10",
+                    "10.40",
+                    "3-Minute Movie Challenge LIVE",
+                    "We The Free",
+                ],
+                [
+                    "SUN",
+                    "edu",
+                    "10.50",
+                    "11.20",
+                    "Animal vs Plant-Based Meat: A Hearty Debate",
+                    "Dr Matthew Nagra, ND",
+                ],
+                [
+                    "SUN",
+                    "edu",
+                    "11.30",
+                    "12.00",
+                    "Why I Am a Militant Vegan",
+                    "The Militant Vegan, Raffaela Raab",
+                ],
+                [
+                    "SUN",
+                    "edu",
+                    "12.10",
+                    "12.40",
+                    "Rebels or Revolutionaries?",
+                    "Ronnie Lee",
+                ],
+                [
+                    "SUN",
+                    "edu",
+                    "12.50",
+                    "13.20",
+                    "Street Outreach Creates a Vegan World",
+                    "Jake Bristow, We The Free",
+                ],
+                ["SUN", "edu", "13.30", "14.00", "Breaking the Wall", "Menkay"],
+                [
+                    "SUN",
+                    "edu",
+                    "14.10",
+                    "15.10",
+                    "Panel: Debunking Nutrition Nonsense LIVE",
+                    "Patel · Martin · Nagra · Weir",
+                ],
+                [
+                    "SUN",
+                    "edu",
+                    "15.30",
+                    "16.00",
+                    "Hidden Barriers: Deaf & Vegan",
+                    "Shauna Flannigan, BSL Vegan Hub",
+                ],
+                [
+                    "SUN",
+                    "edu",
+                    "16.15",
+                    "16.45",
+                    "How We Banned Boiling Lobsters Alive",
+                    "Charlotte Devine, The Animal Law Foundation",
+                ],
+                [
+                    "SUN",
+                    "edu",
+                    "17.00",
+                    "17.30",
+                    "What Everyone Gets Wrong About Activism",
+                    "Kerri Waters",
+                ],
+                [
+                    "SUN",
+                    "edu",
+                    "17.40",
+                    "18.10",
+                    "Elwood's Organic Dog Meat",
+                    "Molly Elwood",
+                ],
+                [
+                    "SUN",
+                    "edu",
+                    "18.30",
+                    "19.00",
+                    "How We Win!",
+                    "Tom Harris & Laila Kasam, Project Phoenix",
+                ],
+                [
+                    "SUN",
+                    "edu",
+                    "19.10",
+                    "19.40",
+                    "Why We Need to Love Pigeons",
+                    "Sue Joyce, Little Green Pigeon C.I.C",
+                ],
+                // MIND & BODY
+                ["FRI", "mb", "17.30", "19.00", "Speed Dating", "", "activity"],
+                [
+                    "FRI",
+                    "mb",
+                    "20.00",
+                    "22.00",
+                    "Ceilidh",
+                    "The Vegan Vampires",
+                    "activity",
+                ],
+                [
+                    "SAT",
+                    "mb",
+                    "08.00",
+                    "08.50",
+                    "Rise & Shine Pilates",
+                    "Becca · Pilates",
+                ],
+                [
+                    "SAT",
+                    "mb",
+                    "09.00",
+                    "09.50",
+                    "Vinyasa Yoga Flow",
+                    "Lucy · Yoga",
+                ],
+                [
+                    "SAT",
+                    "mb",
+                    "10.00",
+                    "10.50",
+                    "Dance Fitness",
+                    "Zoe · Fitness",
+                ],
+                [
+                    "SAT",
+                    "mb",
+                    "11.00",
+                    "11.50",
+                    "Yogalates",
+                    "Amanda · Yoga / Pilates",
+                ],
+                [
+                    "SAT",
+                    "mb",
+                    "12.00",
+                    "12.50",
+                    "Healing Hearts: Restore, Reconnect, Rise",
+                    "Health Wellbeing First · Breathwork",
+                ],
+                ["SAT", "mb", "13.00", "14.50", "Dynamic Flow", "Mine · Yoga"],
+                [
+                    "SAT",
+                    "mb",
+                    "14.30",
+                    "16.00",
+                    "Upcycled Fabric Bracelets",
+                    "Shika · Mindfulness",
+                ],
+                [
+                    "SAT",
+                    "mb",
+                    "16.15",
+                    "17.05",
+                    "Sound Bath & The Collective Calls",
+                    "Niko · Meditation",
+                ],
+                ["SAT", "mb", "17.30", "19.00", "Speed Dating", "", "activity"],
+                [
+                    "SUN",
+                    "mb",
+                    "08.00",
+                    "08.50",
+                    "Mindfulness Meditation",
+                    "Katherine",
+                ],
+                [
+                    "SUN",
+                    "mb",
+                    "09.00",
+                    "09.50",
+                    "Mat-Mates: Two Vegans, One Mat",
+                    "Anne · Pilates",
+                ],
+                [
+                    "SUN",
+                    "mb",
+                    "10.00",
+                    "10.50",
+                    "Spiritual Warrior",
+                    "Jamie Logan · Yoga",
+                ],
+                [
+                    "SUN",
+                    "mb",
+                    "11.00",
+                    "11.50",
+                    "Freestyle Fitness Yoga",
+                    "Chris",
+                ],
+                [
+                    "SUN",
+                    "mb",
+                    "12.00",
+                    "12.50",
+                    "Bollywood Dance Workshop",
+                    "Kasturi",
+                ],
+                [
+                    "SUN",
+                    "mb",
+                    "13.00",
+                    "14.30",
+                    "Himalayan Kundalini",
+                    "Ginger · Yoga / Breathwork",
+                ],
+                [
+                    "SUN",
+                    "mb",
+                    "15.00",
+                    "15.50",
+                    "Line Dancing for Fun!",
+                    "Molly",
+                ],
+                [
+                    "SUN",
+                    "mb",
+                    "16.00",
+                    "16.50",
+                    "Turning Pain into Power",
+                    "Yvonne · Breathwork",
+                ],
+                // AFTER DARK (same tent, evening programme)
+                [
+                    "SAT",
+                    "mb",
+                    "20.00",
+                    "20.35",
+                    "The Vegan Queens + Special Guest",
+                    "After Dark",
+                    "music",
+                ],
+                [
+                    "SAT",
+                    "mb",
+                    "20.35",
+                    "20.55",
+                    "Dawn Chorus",
+                    "After Dark",
+                    "music",
+                ],
+                [
+                    "SAT",
+                    "mb",
+                    "20.55",
+                    "21.15",
+                    "Vegan Vampires",
+                    "After Dark",
+                    "music",
+                ],
+                [
+                    "SAT",
+                    "mb",
+                    "21.15",
+                    "21.25",
+                    "Glitzy Godiva",
+                    "After Dark",
+                    "music",
+                ],
+                [
+                    "SAT",
+                    "mb",
+                    "21.25",
+                    "21.40",
+                    "Vegan Queen V",
+                    "After Dark",
+                    "music",
+                ],
+                [
+                    "SAT",
+                    "mb",
+                    "21.40",
+                    "22.00",
+                    "Martha Tydfil",
+                    "After Dark",
+                    "music",
+                ],
+                [
+                    "SAT",
+                    "mb",
+                    "22.00",
+                    "24.00",
+                    "Karaoke",
+                    "After Dark · Hosted by TVQ",
+                    "dj",
+                ],
+                [
+                    "SUN",
+                    "mb",
+                    "19.00",
+                    "19.30",
+                    "The Vegan Queens",
+                    "After Dark",
+                    "music",
+                ],
+                [
+                    "SUN",
+                    "mb",
+                    "19.30",
+                    "19.45",
+                    "Barbara Helen",
+                    "After Dark",
+                    "music",
+                ],
+                ["SUN", "mb", "19.45", "20.05", "Yeazt", "After Dark", "music"],
+                [
+                    "SUN",
+                    "mb",
+                    "20.05",
+                    "20.25",
+                    "Luke Roopchand",
+                    "After Dark",
+                    "music",
+                ],
+                [
+                    "SUN",
+                    "mb",
+                    "20.25",
+                    "20.45",
+                    "BFriendly",
+                    "After Dark",
+                    "music",
+                ],
+                [
+                    "SUN",
+                    "mb",
+                    "20.45",
+                    "21.05",
+                    "The Vegan Queens",
+                    "After Dark",
+                    "music",
+                ],
+                [
+                    "SUN",
+                    "mb",
+                    "21.05",
+                    "21.20",
+                    "Toxique",
+                    "After Dark",
+                    "music",
+                ],
+                [
+                    "SUN",
+                    "mb",
+                    "21.20",
+                    "23.00",
+                    "Karaoke",
+                    "After Dark · Hosted by TVQ",
+                    "dj",
+                ],
+                // FAMILY AREA
+                [
+                    "FRI",
+                    "family",
+                    "15.00",
+                    "16.00",
+                    "Meet and Greet",
+                    "Ages 0–11",
+                ],
+                [
+                    "FRI",
+                    "family",
+                    "16.00",
+                    "17.00",
+                    "Meet and Greet",
+                    "Ages 11–18",
+                ],
+                [
+                    "FRI",
+                    "family",
+                    "17.00",
+                    "19.00",
+                    "Foam Party",
+                    "Pirate themed",
+                ],
+                [
+                    "SAT",
+                    "family",
+                    "10.00",
+                    "11.00",
+                    "Yoga & Mindfulness",
+                    "Caru Yoga",
+                ],
+                [
+                    "SAT",
+                    "family",
+                    "11.00",
+                    "12.00",
+                    "Family Drumming Circle",
+                    "Creuynni Wellbeing",
+                ],
+                [
+                    "SAT",
+                    "family",
+                    "12.15",
+                    "13.00",
+                    "Puppet Show",
+                    "Daisy Janey & Friends",
+                ],
+                [
+                    "SAT",
+                    "family",
+                    "13.00",
+                    "14.00",
+                    "Fluorescent Family Rave",
+                    "SH Events",
+                ],
+                [
+                    "SAT",
+                    "family",
+                    "14.00",
+                    "15.00",
+                    "Sunshine Reggae",
+                    "BFriendly",
+                ],
+                [
+                    "SAT",
+                    "family",
+                    "15.00",
+                    "16.00",
+                    "Making Nourishing Vegan Snacks",
+                    "Natureatfood",
+                ],
+                [
+                    "SAT",
+                    "family",
+                    "16.00",
+                    "17.00",
+                    "Céilidh",
+                    "Vegan Vampires",
+                ],
+                [
+                    "SAT",
+                    "family",
+                    "17.00",
+                    "19.00",
+                    "Open Mic & Talent Show",
+                    "SH Events",
+                ],
+                [
+                    "SUN",
+                    "family",
+                    "10.00",
+                    "11.00",
+                    "Morning Wake & Shake",
+                    "SH Events",
+                ],
+                [
+                    "SUN",
+                    "family",
+                    "11.00",
+                    "12.00",
+                    "Family Quiz",
+                    "Artheo Entertainment",
+                ],
+                [
+                    "SUN",
+                    "family",
+                    "12.00",
+                    "13.00",
+                    "Being the Only Vegan",
+                    "The Young Vegan",
+                ],
+                [
+                    "SUN",
+                    "family",
+                    "13.00",
+                    "14.00",
+                    "Circus Workshop",
+                    "Artheo Entertainment",
+                ],
+                [
+                    "SUN",
+                    "family",
+                    "14.00",
+                    "15.00",
+                    "Design a Charity Card Contest",
+                    "Goa Dog Foundation",
+                ],
+                [
+                    "SUN",
+                    "family",
+                    "15.00",
+                    "16.00",
+                    "Family Building Challenge",
+                    "STEM",
+                ],
+                ["SUN", "family", "16.00", "17.00", "Teddy Bear Rescue", ""],
+                [
+                    "SUN",
+                    "family",
+                    "17.00",
+                    "18.00",
+                    "Kids' Favourites Sing-Along",
+                    "Artheo Entertainment",
+                ],
+                ["SUN", "family", "18.00", "19.00", "Diddy Dub Dance", ""],
+                // TEEN TENT
+                [
+                    "FRI",
+                    "teen",
+                    "10.00",
+                    "19.00",
+                    "Teen Tent open · board games",
+                    "",
+                ],
+                [
+                    "SAT",
+                    "teen",
+                    "11.00",
+                    "12.00",
+                    "Teens Leading Plant-Based Schools",
+                    "PBS",
+                ],
+                ["SAT", "teen", "12.00", "13.00", "Little Green Pigeon", ""],
+                [
+                    "SAT",
+                    "teen",
+                    "14.00",
+                    "15.00",
+                    "Kindness Matters",
+                    "Goa Dog Foundation",
+                ],
+                [
+                    "SAT",
+                    "teen",
+                    "16.00",
+                    "17.00",
+                    "Grassroots Animal Rights Activist",
+                    "Clif Grant",
+                ],
+                [
+                    "SUN",
+                    "teen",
+                    "11.00",
+                    "12.00",
+                    "Relay Competition",
+                    "Goa Dog Foundation",
+                ],
+                [
+                    "SUN",
+                    "teen",
+                    "12.00",
+                    "13.00",
+                    "Writing for Activism",
+                    "Ray Star",
+                ],
+                [
+                    "SUN",
+                    "teen",
+                    "14.00",
+                    "15.00",
+                    "Being the Only Vegan",
+                    "The Young Vegan",
+                ],
+                [
+                    "SUN",
+                    "teen",
+                    "16.00",
+                    "17.00",
+                    "The Future is Vegan",
+                    "Jazz Gellatley of Viva",
+                ],
+                // AROUND SITE
+                [
+                    "SAT",
+                    "site",
+                    "09.00",
+                    "10.00",
+                    "Vegan Runners Parkrun",
+                    "Sherwood Pines",
+                ],
+                [
+                    "SAT",
+                    "site",
+                    "10.00",
+                    "18.00",
+                    "Face painting · archery · basket weaving · dragon tent",
+                    "Bouncy castles until 19:00",
+                ],
+                ["SAT", "site", "20.30", "24.00", "Evening Cinema", ""],
+                [
+                    "SUN",
+                    "site",
+                    "10.00",
+                    "18.00",
+                    "Face painting · archery · basket weaving · dragon tent",
+                    "Bouncy castles until 19:00",
+                ],
+                ["SUN", "site", "20.30", "24.00", "Evening Cinema", ""],
+            ];
 
-/* ---------------- DATA [day, stage, start, end, title, sub, typeOverride?] ---------------- */
-const RAW = [
-// MAIN STAGE
-["SAT","main","12.35","13.05","Dr. Michael Klaper",""],
-["SAT","main","13.45","14.15","Kiri Pritchard-McLean",""],
-["SAT","main","14.55","15.25","George Monbiot",""],
-["SAT","main","16.05","16.35","Juliet Gellatley","Viva!"],
-["SAT","main","17.15","17.45","Lou Sanders",""],
-["SAT","main","18.20","19.00","Mic the Vegan",""],
-["SAT","main","19.40","20.40","Earthling Ed",""],
-["SUN","main","12.10","12.30","Zack Polanski","Green Party"],
-["SUN","main","12.35","13.05","Alissa White-Gluz & Doyle",""],
-["SUN","main","13.45","14.15","The Happy Pear",""],
-["SUN","main","14.55","15.25","Peter Egan",""],
-["SUN","main","16.05","17.05","Moby",""],
-["SUN","main","17.45","18.15","Diane Morgan",""],
-["SUN","main","18.55","19.25","Akala",""],
-["SUN","main","20.05","20.40","Henning When",""],
-// MUSIC STAGE
-["FRI","music","21.50","24.00","70's / 80's Party","", "dj"],
-["SAT","music","12.00","12.30","Jason Bromley","Pop / Rock"],
-["SAT","music","13.10","13.40","Taylor T","Folk / Spiritual"],
-["SAT","music","14.20","14.50","Wood and Nails","Alt-Rock / Emo"],
-["SAT","music","15.30","16.00","The Menstrual Cramps","Punk"],
-["SAT","music","16.40","17.10","Tally Spear","Pop / Rock"],
-["SAT","music","17.50","18.20","McDermott & North","Indie / Rock"],
-["SAT","music","19.05","19.35","Macka B","Reggae"],
-["SAT","music","20.45","21.45","JME","Grime"],
-["SAT","music","21.50","24.00","Afterparty · Earthling Ed","Techno","dj"],
-["SUN","music","13.10","13.40","Fraser Morgan","Folk / Punk"],
-["SUN","music","14.20","14.50","Lizzie Esau","Alternative"],
-["SUN","music","15.30","16.00","Feldi","Rap"],
-["SUN","music","17.10","17.40","Holysseus Fly","Alt-Pop"],
-["SUN","music","18.20","18.50","Tara McDonald","Dance / Pop"],
-["SUN","music","19.30","20.00","Delilah Bon","Brat Punk / Nu-Metal"],
-["SUN","music","20.45","21.30","Bimini","Pop / Electronic"],
-["SUN","music","21.50","24.00","Afterparty","Rock / Metal / Alternative","dj"],
-// WE THE FREE
-["FRI","wtf","20.30","23.00","We The Free: RAVE","DnB · UKG · Jungle"],
-["SAT","wtf","20.30","23.00","We The Free: DISCO","All the classics"],
-// THE JUNGLE
-["THU","jungle","15.45","16.30","Dubstep","Lucas Brooks"],
-["THU","jungle","16.30","17.15","Jungle","Lucas Brooks"],
-["THU","jungle","17.15","18.15","Gabber","Club Will"],
-["THU","jungle","18.15","19.00","Trap","Lucas Brooks"],
-["THU","jungle","19.00","20.00","QUEEN Party","Elric Newby"],
-["THU","jungle","20.00","21.00","Progressive House","Nawtystep"],
-["THU","jungle","21.00","23.00","R&B","Tahnee Kaya"],
-["FRI","jungle","14.00","15.00","Afrobeats","Lucas Brooks"],
-["FRI","jungle","15.00","16.00","Dub Reggae","Lioness Power"],
-["FRI","jungle","16.00","17.00","Emo","Chris Hines"],
-["FRI","jungle","17.00","18.00","Tech House","Club Will"],
-["FRI","jungle","18.00","19.00","Drum and Bass","George Martin · Carnism Debunked"],
-["FRI","jungle","19.00","20.00","Nu-Metal / Industrial","Elric Newby"],
-["FRI","jungle","20.00","20.55","Pop","Chris Hines"],
-["FRI","jungle","20.55","24.00","Punk","Pop, Skate, Ska, Hardcore & Folk · Jordan Martin, VCO founder"],
-["SAT","jungle","14.00","14.45","Ska","Lucas Brooks / Delroy Brooks"],
-["SAT","jungle","14.45","15.45","Reggae","Lucas Brooks / Delroy Brooks"],
-["SAT","jungle","15.45","16.45","RnB","Kevin The Vegan"],
-["SAT","jungle","16.45","17.45","Grime","Lucas Brooks"],
-["SAT","jungle","17.45","18.45","House","Lucas Brooks b2b Tahnee Kaya"],
-["SAT","jungle","18.45","19.45","Metalcore / Deathcore","Soyknot · Chris Hines / David Ramms"],
-["SAT","jungle","19.45","21.00","Taylor Swift Party","Emily Clare"],
-["SAT","jungle","21.00","22.00","Indie","Ampslave"],
-["SAT","jungle","22.00","24.00","Drum and Bass","VFC · Deccy b2b Lucas Brooks"],
-["SUN","jungle","14.00","15.00","Soulful / Funky House","Lucas Brooks"],
-["SUN","jungle","15.00","16.00","Amapiano","Lucas Brooks"],
-["SUN","jungle","16.00","17.00","Trance","Club Will"],
-["SUN","jungle","17.00","18.00","Garage","Nawtystep"],
-["SUN","jungle","18.00","19.00","Bassline / Speed Garage","Deccy b2b Lucas Brooks"],
-["SUN","jungle","19.00","20.00","Metal","Death / Black / Thrash / NWOBHM / Groove · Elric Newby"],
-["SUN","jungle","20.00","21.00","Soul / Funk / Disco","DJ Beavs"],
-["SUN","jungle","21.00","22.00","High Contrast","Drum and Bass"],
-["SUN","jungle","22.00","24.00","Hip-Hop","Deccy / Kevin The Vegan"],
-// EDUCATION
-["FRI","edu","16.50","17.10","Current Leaders & Future Policy Makers","Sasha Jolliffe Yasawi (ETLIN) & Vanessa Hudson (AWP)"],
-["FRI","edu","17.20","17.50","Panel: Veganism and Politics","Hosted by Sasha Jolliffe (ETLIN) + guests"],
-["FRI","edu","18.00","18.30","From Slaughter to Sanctuary","Harbin SHS Animal Rescue · Slaughterhouse Survivors"],
-["FRI","edu","18.40","19.10","Five Years of Camp Beagle","John Curtin & Sole Iriart"],
-["FRI","edu","19.20","19.50","Dogs & Cats in Vegan Households","Vegan vet Dr Arielle Griffiths"],
-["FRI","edu","20.00","20.30","10 Years of VCO","Jordan Martin & Ellis Goodridge"],
-["SAT","edu","09.40","10.10","\u201CPet\u201D Animals: The Forgotten Victims","Illy Parrwood & Polly Foreman, Rescue Not Retail"],
-["SAT","edu","10.20","10.50","One","Mel & Steve"],
-["SAT","edu","11.00","11.30","Ahimsa in Action","Jamie Logan"],
-["SAT","edu","11.40","12.10","Animals Need Leaders","Paul Bashir, Anonymous for the Voiceless"],
-["SAT","edu","12.20","12.50","Between Despair and Hope","Tobias Leenaert"],
-["SAT","edu","13.00","14.00","Mental Health & Sustainable Advocacy","Libby Peppiatt + guests · The Vegan Society"],
-["SAT","edu","14.00","15.00","Vegan-Inclusive Education","Laura Diamond · The Vegan Society"],
-["SAT","edu","15.00","16.00","Vegan Nutrition and Myth-Busting","Emily Angus · The Vegan Society"],
-["SAT","edu","16.10","16.40","Vegan Pet Food: A New Frontier","Professor Andrew Knight"],
-["SAT","edu","16.40","17.40","Panel: Vegan Vets","Brough · Knight · McGill · Rivers"],
-["SAT","edu","17.50","18.20","The Plant-Based School Food Revolution","Flora Clemett & Alex Jemison"],
-["SAT","edu","18.20","19.20","The Beginning of the End of Factory Farming","Rose Patterson & Michelle Farnham, Animal Rising"],
-["SAT","edu","19.20","19.50","Join Plant-Based Universities","Ulysse Tonnelé Verjus"],
-["SAT","edu","20.00","20.30","Building Consistent Vegan Activism","Oliver Loos"],
-["SUN","edu","10.10","10.40","3-Minute Movie Challenge LIVE","We The Free"],
-["SUN","edu","10.50","11.20","Animal vs Plant-Based Meat: A Hearty Debate","Dr Matthew Nagra, ND"],
-["SUN","edu","11.30","12.00","Why I Am a Militant Vegan","The Militant Vegan, Raffaela Raab"],
-["SUN","edu","12.10","12.40","Rebels or Revolutionaries?","Ronnie Lee"],
-["SUN","edu","12.50","13.20","Street Outreach Creates a Vegan World","Jake Bristow, We The Free"],
-["SUN","edu","13.30","14.00","Breaking the Wall","Menkay"],
-["SUN","edu","14.10","15.10","Panel: Debunking Nutrition Nonsense LIVE","Patel · Martin · Nagra · Weir"],
-["SUN","edu","15.30","16.00","Hidden Barriers: Deaf & Vegan","Shauna Flannigan, BSL Vegan Hub"],
-["SUN","edu","16.15","16.45","How We Banned Boiling Lobsters Alive","Charlotte Devine, The Animal Law Foundation"],
-["SUN","edu","17.00","17.30","What Everyone Gets Wrong About Activism","Kerri Waters"],
-["SUN","edu","17.40","18.10","Elwood's Organic Dog Meat","Molly Elwood"],
-["SUN","edu","18.30","19.00","How We Win!","Tom Harris & Laila Kasam, Project Phoenix"],
-["SUN","edu","19.10","19.40","Why We Need to Love Pigeons","Sue Joyce, Little Green Pigeon C.I.C"],
-// MIND & BODY
-["FRI","mb","17.30","19.00","Speed Dating","","activity"],
-["FRI","mb","20.00","22.00","Ceilidh","The Vegan Vampires","activity"],
-["SAT","mb","08.00","08.50","Rise & Shine Pilates","Becca · Pilates"],
-["SAT","mb","09.00","09.50","Vinyasa Yoga Flow","Lucy · Yoga"],
-["SAT","mb","10.00","10.50","Dance Fitness","Zoe · Fitness"],
-["SAT","mb","11.00","11.50","Yogalates","Amanda · Yoga / Pilates"],
-["SAT","mb","12.00","12.50","Healing Hearts: Restore, Reconnect, Rise","Health Wellbeing First · Breathwork"],
-["SAT","mb","13.00","14.50","Dynamic Flow","Mine · Yoga"],
-["SAT","mb","14.30","16.00","Upcycled Fabric Bracelets","Shika · Mindfulness"],
-["SAT","mb","16.15","17.05","Sound Bath & The Collective Calls","Niko · Meditation"],
-["SAT","mb","17.30","19.00","Speed Dating","","activity"],
-["SUN","mb","08.00","08.50","Mindfulness Meditation","Katherine"],
-["SUN","mb","09.00","09.50","Mat-Mates: Two Vegans, One Mat","Anne · Pilates"],
-["SUN","mb","10.00","10.50","Spiritual Warrior","Jamie Logan · Yoga"],
-["SUN","mb","11.00","11.50","Freestyle Fitness Yoga","Chris"],
-["SUN","mb","12.00","12.50","Bollywood Dance Workshop","Kasturi"],
-["SUN","mb","13.00","14.30","Himalayan Kundalini","Ginger · Yoga / Breathwork"],
-["SUN","mb","15.00","15.50","Line Dancing for Fun!","Molly"],
-["SUN","mb","16.00","16.50","Turning Pain into Power","Yvonne · Breathwork"],
-// AFTER DARK (same tent, evening programme)
-["SAT","mb","20.00","20.35","The Vegan Queens + Special Guest","After Dark","music"],
-["SAT","mb","20.35","20.55","Dawn Chorus","After Dark","music"],
-["SAT","mb","20.55","21.15","Vegan Vampires","After Dark","music"],
-["SAT","mb","21.15","21.25","Glitzy Godiva","After Dark","music"],
-["SAT","mb","21.25","21.40","Vegan Queen V","After Dark","music"],
-["SAT","mb","21.40","22.00","Martha Tydfil","After Dark","music"],
-["SAT","mb","22.00","24.00","Karaoke","After Dark · Hosted by TVQ","dj"],
-["SUN","mb","19.00","19.30","The Vegan Queens","After Dark","music"],
-["SUN","mb","19.30","19.45","Barbara Helen","After Dark","music"],
-["SUN","mb","19.45","20.05","Yeazt","After Dark","music"],
-["SUN","mb","20.05","20.25","Luke Roopchand","After Dark","music"],
-["SUN","mb","20.25","20.45","BFriendly","After Dark","music"],
-["SUN","mb","20.45","21.05","The Vegan Queens","After Dark","music"],
-["SUN","mb","21.05","21.20","Toxique","After Dark","music"],
-["SUN","mb","21.20","23.00","Karaoke","After Dark · Hosted by TVQ","dj"],
-// FAMILY AREA
-["FRI","family","15.00","16.00","Meet and Greet","Ages 0–11"],
-["FRI","family","16.00","17.00","Meet and Greet","Ages 11–18"],
-["FRI","family","17.00","19.00","Foam Party","Pirate themed"],
-["SAT","family","10.00","11.00","Yoga & Mindfulness","Caru Yoga"],
-["SAT","family","11.00","12.00","Family Drumming Circle","Creuynni Wellbeing"],
-["SAT","family","12.15","13.00","Puppet Show","Daisy Janey & Friends"],
-["SAT","family","13.00","14.00","Fluorescent Family Rave","SH Events"],
-["SAT","family","14.00","15.00","Sunshine Reggae","BFriendly"],
-["SAT","family","15.00","16.00","Making Nourishing Vegan Snacks","Natureatfood"],
-["SAT","family","16.00","17.00","Céilidh","Vegan Vampires"],
-["SAT","family","17.00","19.00","Open Mic & Talent Show","SH Events"],
-["SUN","family","10.00","11.00","Morning Wake & Shake","SH Events"],
-["SUN","family","11.00","12.00","Family Quiz","Artheo Entertainment"],
-["SUN","family","12.00","13.00","Being the Only Vegan","The Young Vegan"],
-["SUN","family","13.00","14.00","Circus Workshop","Artheo Entertainment"],
-["SUN","family","14.00","15.00","Design a Charity Card Contest","Goa Dog Foundation"],
-["SUN","family","15.00","16.00","Family Building Challenge","STEM"],
-["SUN","family","16.00","17.00","Teddy Bear Rescue",""],
-["SUN","family","17.00","18.00","Kids' Favourites Sing-Along","Artheo Entertainment"],
-["SUN","family","18.00","19.00","Diddy Dub Dance",""],
-// TEEN TENT
-["FRI","teen","10.00","19.00","Teen Tent open · board games",""],
-["SAT","teen","11.00","12.00","Teens Leading Plant-Based Schools","PBS"],
-["SAT","teen","12.00","13.00","Little Green Pigeon",""],
-["SAT","teen","14.00","15.00","Kindness Matters","Goa Dog Foundation"],
-["SAT","teen","16.00","17.00","Grassroots Animal Rights Activist","Clif Grant"],
-["SUN","teen","11.00","12.00","Relay Competition","Goa Dog Foundation"],
-["SUN","teen","12.00","13.00","Writing for Activism","Ray Star"],
-["SUN","teen","14.00","15.00","Being the Only Vegan","The Young Vegan"],
-["SUN","teen","16.00","17.00","The Future is Vegan","Jazz Gellatley of Viva"],
-// AROUND SITE
-["SAT","site","09.00","10.00","Vegan Runners Parkrun","Sherwood Pines"],
-["SAT","site","10.00","18.00","Face painting · archery · basket weaving · dragon tent","Bouncy castles until 19:00"],
-["SAT","site","20.30","24.00","Evening Cinema",""],
-["SUN","site","10.00","18.00","Face painting · archery · basket weaving · dragon tent","Bouncy castles until 19:00"],
-["SUN","site","20.30","24.00","Evening Cinema",""],
-];
+            const toMin = (t) => {
+                const [h, m] = t.split(".").map(Number);
+                return h * 60 + m;
+            };
+            const fmtT = (t) => t.replace(".", ":");
+            const EVENTS = RAW.map((r, i) => {
+                const [day, stage, start, end, title, sub, typeOv] = r;
+                const s = toMin(start);
+                let e = toMin(end);
+                if (e <= s) e += 1440;
+                return {
+                    id: "v" + i,
+                    day,
+                    stage,
+                    start,
+                    end,
+                    title,
+                    sub: sub || "",
+                    type: typeOv || TYPE_BY_STAGE[stage],
+                    s,
+                    e,
+                };
+            });
 
-const toMin = t => { const [h,m]=t.split('.').map(Number); return h*60+m; };
-const fmtT = t => t.replace('.',':');
-const EVENTS = RAW.map((r,i)=>{
-  const [day,stage,start,end,title,sub,typeOv]=r;
-  const s=toMin(start); let e=toMin(end); if(e<=s) e+=1440;
-  return {id:'v'+i, day, stage, start, end, title, sub:sub||'', type: typeOv || TYPE_BY_STAGE[stage], s, e};
-});
+            /* ---------------- STATE ---------------- */
+            let day = "SAT";
+            let stageF = new Set(Object.keys(STAGES));
+            let typeF = new Set(Object.keys(TYPES));
+            let favOnly = false;
+            let favs = new Set();
+            let theme = "dark";
+            let view = "timeline";
+            let panelOpen = false;
+            let openId = null;
 
-/* ---------------- STATE ---------------- */
-let day="SAT";
-let stageF=new Set(Object.keys(STAGES));
-let typeF=new Set(Object.keys(TYPES));
-let favOnly=false;
-let favs=new Set();
-let theme="dark";
-let view="timeline";
-let panelOpen=false;
-let openId=null;
+            const PXM = () =>
+                parseFloat(
+                    getComputedStyle(document.documentElement).getPropertyValue(
+                        "--px-per-min",
+                    ),
+                );
 
-const PXM = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px-per-min'));
-
-/* ---------------- STORAGE ----------------
+            /* ---------------- STORAGE ----------------
    Persistence layers, best first:
    1. localStorage — GitHub Pages / any real hosting
    2. window.storage — Claude artifact preview
    3. in-memory only — favourites last for the session
    Every call is guarded; a blocked or missing layer never throws. */
-const KEY='vco-planner-state';
+            const KEY = "vco-planner-state";
 
-function lsAvailable(){
-  try{ localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return true; }
-  catch(e){ return false; }
-}
-const hasLS = lsAvailable();
-let artifactOk = !hasLS && typeof window!=='undefined' && window.storage && typeof window.storage.get==='function';
+            function lsAvailable() {
+                try {
+                    localStorage.setItem("__t", "1");
+                    localStorage.removeItem("__t");
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }
+            const hasLS = lsAvailable();
+            let artifactOk =
+                !hasLS &&
+                typeof window !== "undefined" &&
+                window.storage &&
+                typeof window.storage.get === "function";
 
-async function loadState(){
-  let raw=null;
-  if(hasLS){
-    try{ raw = localStorage.getItem(KEY); }catch(e){}
-  } else if(artifactOk){
-    try{
-      const r = await window.storage.get(KEY, false).catch(()=>null);
-      if(r && r.value) raw = r.value;
-    }catch(e){}
-  }
-  if(raw){
-    try{
-      const s = JSON.parse(raw);
-      if(Array.isArray(s.favs)) favs = new Set(s.favs);
-      if(s.theme==='light'||s.theme==='dark') theme = s.theme;
-      if(s.view==='timeline'||s.view==='list') view = s.view;
-    }catch(e){}
-  }
-  applyTheme();
-  render();
-}
-function saveState(){
-  const v = JSON.stringify({favs:[...favs], theme, view});
-  if(hasLS){
-    try{ localStorage.setItem(KEY, v); }catch(e){}
-  } else if(artifactOk){
-    Promise.resolve()
-      .then(()=>window.storage.set(KEY, v, false))
-      .catch(()=>{ artifactOk=false; });
-  }
-}
-function toggleFav(id){
-  favs.has(id) ? favs.delete(id) : favs.add(id);
-  render();
-  if(openId===id) renderSheet(id);
-  saveState();
-}
-function applyTheme(){
-  document.documentElement.dataset.theme = theme;
-  const b=document.getElementById('themeToggle');
-  b.textContent = theme==='dark' ? '☀︎ Light' : '☾ Dark';
-}
-document.getElementById('themeToggle').onclick=()=>{
-  theme = theme==='dark' ? 'light' : 'dark';
-  applyTheme(); saveState();
-};
+            async function loadState() {
+                let raw = null;
+                if (hasLS) {
+                    try {
+                        raw = localStorage.getItem(KEY);
+                    } catch (e) {}
+                } else if (artifactOk) {
+                    try {
+                        const r = await window.storage
+                            .get(KEY, false)
+                            .catch(() => null);
+                        if (r && r.value) raw = r.value;
+                    } catch (e) {}
+                }
+                if (raw) {
+                    try {
+                        const s = JSON.parse(raw);
+                        if (Array.isArray(s.favs)) favs = new Set(s.favs);
+                        if (s.theme === "light" || s.theme === "dark")
+                            theme = s.theme;
+                        if (s.view === "timeline" || s.view === "list")
+                            view = s.view;
+                    } catch (e) {}
+                }
+                applyTheme();
+                render();
+            }
+            function saveState() {
+                const v = JSON.stringify({ favs: [...favs], theme, view });
+                if (hasLS) {
+                    try {
+                        localStorage.setItem(KEY, v);
+                    } catch (e) {}
+                } else if (artifactOk) {
+                    Promise.resolve()
+                        .then(() => window.storage.set(KEY, v, false))
+                        .catch(() => {
+                            artifactOk = false;
+                        });
+                }
+            }
+            function toggleFav(id) {
+                favs.has(id) ? favs.delete(id) : favs.add(id);
+                render();
+                if (openId === id) renderSheet(id);
+                saveState();
+            }
+            function applyTheme() {
+                document.documentElement.dataset.theme = theme;
+                const b = document.getElementById("themeToggle");
+                const icon = document.getElementById("themeIcon");
+                icon.textContent = theme === "dark" ? "light_mode" : "dark_mode";
+                b.setAttribute(
+                    "aria-label",
+                    theme === "dark"
+                        ? "Switch to light mode"
+                        : "Switch to dark mode",
+                );
+            }
+            document.getElementById("themeToggle").onclick = () => {
+                theme = theme === "dark" ? "light" : "dark";
+                applyTheme();
+                saveState();
+            };
 
-/* ---------------- CLASHES (among favourites, per day) ---------------- */
-function clashMap(dayEvents){
-  const f = dayEvents.filter(ev=>favs.has(ev.id));
-  const map={};
-  for(let i=0;i<f.length;i++) for(let j=i+1;j<f.length;j++){
-    const a=f[i], b=f[j];
-    if(a.s < b.e && b.s < a.e){
-      (map[a.id]=map[a.id]||[]).push(b);
-      (map[b.id]=map[b.id]||[]).push(a);
-    }
-  }
-  return map;
-}
+            /* ---------------- CLASHES (among favourites, per day) ---------------- */
+            function clashMap(dayEvents) {
+                const f = dayEvents.filter((ev) => favs.has(ev.id));
+                const map = {};
+                for (let i = 0; i < f.length; i++)
+                    for (let j = i + 1; j < f.length; j++) {
+                        const a = f[i],
+                            b = f[j];
+                        if (a.s < b.e && b.s < a.e) {
+                            (map[a.id] = map[a.id] || []).push(b);
+                            (map[b.id] = map[b.id] || []).push(a);
+                        }
+                    }
+                return map;
+            }
 
-/* ---------------- RENDER ---------------- */
-function renderDaybar(){
-  document.getElementById('daybar').innerHTML = DAYS.map(d=>{
-    const n = EVENTS.filter(e=>e.day===d).length;
-    return `<button class="day ${d===day?'active':''}" data-d="${d}">${DAY_LONG[d]}<small>${n} events</small></button>`;
-  }).join('');
-  document.querySelectorAll('.day').forEach(b=>b.onclick=()=>{day=b.dataset.d; render();});
-}
+            /* ---------------- RENDER ---------------- */
+            function renderDaybar() {
+                document.getElementById("daybar").innerHTML = DAYS.map((d) => {
+                    const n = EVENTS.filter((e) => e.day === d).length;
+                    return `<button class="day ${d === day ? "active" : ""}" data-d="${d}">${DAY_LONG[d]}<small>${n} events</small></button>`;
+                }).join("");
+                document.querySelectorAll(".day").forEach(
+                    (b) =>
+                        (b.onclick = () => {
+                            day = b.dataset.d;
+                            render();
+                        }),
+                );
+            }
 
-/* shared visibility + stats, used by both views */
-function getVisible(){
-  const dayEvents = EVENTS.filter(e=>e.day===day);
-  const cm = clashMap(dayEvents);
-  const visible = dayEvents.filter(e => stageF.has(e.stage) && typeF.has(e.type) && (!favOnly || favs.has(e.id)));
-  return {dayEvents, cm, visible};
-}
-function activeFilterCount(){
-  let n=0;
-  if(stageF.size !== Object.keys(STAGES).length) n++;
-  if(typeF.size !== Object.keys(TYPES).length) n++;
-  return n;
-}
-function resetFilters(){
-  stageF = new Set(Object.keys(STAGES));
-  typeF = new Set(Object.keys(TYPES));
-  render();
-}
+            /* shared visibility + stats, used by both views */
+            function getVisible() {
+                const dayEvents = EVENTS.filter((e) => e.day === day);
+                const cm = clashMap(dayEvents);
+                const visible = dayEvents.filter(
+                    (e) =>
+                        stageF.has(e.stage) &&
+                        typeF.has(e.type) &&
+                        (!favOnly || favs.has(e.id)),
+                );
+                return { dayEvents, cm, visible };
+            }
+            function activeFilterCount() {
+                let n = 0;
+                if (stageF.size !== Object.keys(STAGES).length) n++;
+                if (typeF.size !== Object.keys(TYPES).length) n++;
+                return n;
+            }
+            function resetFilters() {
+                stageF = new Set(Object.keys(STAGES));
+                typeF = new Set(Object.keys(TYPES));
+                render();
+            }
 
-function renderFilters(){
-  const sr=document.getElementById('stageRow');
-  const allS = stageF.size===Object.keys(STAGES).length;
-  sr.innerHTML = `<span class="deck-label">Stage</span>
-    <button class="pill ${allS?'on':''}" data-sall>All</button>` +
-    Object.entries(STAGES).map(([k,s])=>
-      `<button class="pill ${(!allS && stageF.has(k))?'on':''}" data-s="${k}"><i class="swatch" style="background:${s.color}"></i>${s.name}</button>`
-    ).join('');
-  sr.querySelector('[data-sall]').onclick=()=>{stageF=new Set(Object.keys(STAGES)); render();};
-  sr.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{
-    const k=b.dataset.s;
-    if(stageF.size===Object.keys(STAGES).length){ stageF=new Set([k]); }
-    else { stageF.has(k)?stageF.delete(k):stageF.add(k); if(stageF.size===0) stageF=new Set(Object.keys(STAGES)); }
-    render();
-  });
+            function renderFilters() {
+                const sr = document.getElementById("stageRow");
+                const allS = stageF.size === Object.keys(STAGES).length;
+                sr.innerHTML =
+                    `<span class="deck-label">Stage</span>
+    <button class="pill ${allS ? "on" : ""}" data-sall>All</button>` +
+                    Object.entries(STAGES)
+                        .map(
+                            ([k, s]) =>
+                                `<button class="pill ${!allS && stageF.has(k) ? "on" : ""}" data-s="${k}"><i class="swatch" style="background:${s.color}"></i>${s.name}</button>`,
+                        )
+                        .join("");
+                sr.querySelector("[data-sall]").onclick = () => {
+                    stageF = new Set(Object.keys(STAGES));
+                    render();
+                };
+                sr.querySelectorAll("[data-s]").forEach(
+                    (b) =>
+                        (b.onclick = () => {
+                            const k = b.dataset.s;
+                            if (stageF.size === Object.keys(STAGES).length) {
+                                stageF = new Set([k]);
+                            } else {
+                                stageF.has(k)
+                                    ? stageF.delete(k)
+                                    : stageF.add(k);
+                                if (stageF.size === 0)
+                                    stageF = new Set(Object.keys(STAGES));
+                            }
+                            render();
+                        }),
+                );
 
-  const tr=document.getElementById('typeRow');
-  const allT = typeF.size===Object.keys(TYPES).length;
-  tr.innerHTML = `<span class="deck-label">Type</span>
-    <button class="pill ${allT?'on':''}" data-tall>All</button>` +
-    Object.entries(TYPES).map(([k,n])=>
-      `<button class="pill ${(!allT && typeF.has(k))?'on':''}" data-t="${k}">${n}</button>`
-    ).join('');
-  tr.querySelector('[data-tall]').onclick=()=>{typeF=new Set(Object.keys(TYPES)); render();};
-  tr.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{
-    const k=b.dataset.t;
-    if(typeF.size===Object.keys(TYPES).length){ typeF=new Set([k]); }
-    else { typeF.has(k)?typeF.delete(k):typeF.add(k); if(typeF.size===0) typeF=new Set(Object.keys(TYPES)); }
-    render();
-  });
+                const tr = document.getElementById("typeRow");
+                const allT = typeF.size === Object.keys(TYPES).length;
+                tr.innerHTML =
+                    `<span class="deck-label">Type</span>
+    <button class="pill ${allT ? "on" : ""}" data-tall>All</button>` +
+                    Object.entries(TYPES)
+                        .map(
+                            ([k, n]) =>
+                                `<button class="pill ${!allT && typeF.has(k) ? "on" : ""}" data-t="${k}">${n}</button>`,
+                        )
+                        .join("");
+                tr.querySelector("[data-tall]").onclick = () => {
+                    typeF = new Set(Object.keys(TYPES));
+                    render();
+                };
+                tr.querySelectorAll("[data-t]").forEach(
+                    (b) =>
+                        (b.onclick = () => {
+                            const k = b.dataset.t;
+                            if (typeF.size === Object.keys(TYPES).length) {
+                                typeF = new Set([k]);
+                            } else {
+                                typeF.has(k) ? typeF.delete(k) : typeF.add(k);
+                                if (typeF.size === 0)
+                                    typeF = new Set(Object.keys(TYPES));
+                            }
+                            render();
+                        }),
+                );
 
-  // view toggle
-  document.getElementById('segTl').className = 'seg-btn' + (view==='timeline'?' on':'');
-  document.getElementById('segLv').className = 'seg-btn' + (view==='list'?' on':'');
-  document.getElementById('segTl').setAttribute('aria-selected', view==='timeline');
-  document.getElementById('segLv').setAttribute('aria-selected', view==='list');
+                // view toggle
+                document.getElementById("segTl").className =
+                    "seg-btn" + (view === "timeline" ? " on" : "");
+                document.getElementById("segLv").className =
+                    "seg-btn" + (view === "list" ? " on" : "");
+                document
+                    .getElementById("segTl")
+                    .setAttribute("aria-selected", view === "timeline");
+                document
+                    .getElementById("segLv")
+                    .setAttribute("aria-selected", view === "list");
 
-  // filter button + badge showing active filter groups when the panel is shut
-  const fb=document.getElementById('filterBtn');
-  fb.classList.toggle('on', panelOpen);
-  fb.setAttribute('aria-expanded', panelOpen);
-  const badge=document.getElementById('filterBadge');
-  const n=activeFilterCount();
-  badge.hidden = n===0;
-  badge.textContent = n;
-  document.getElementById('panel').hidden = !panelOpen;
+                // filter button + badge showing active filter groups when the panel is shut
+                const fb = document.getElementById("filterBtn");
+                fb.classList.toggle("on", panelOpen);
+                fb.setAttribute("aria-expanded", panelOpen);
+                const badge = document.getElementById("filterBadge");
+                const n = activeFilterCount();
+                badge.hidden = n === 0;
+                badge.textContent = n;
+                document.getElementById("panel").hidden = !panelOpen;
 
-  // favourites
-  const fc=document.getElementById('favCall');
-  const favToday = EVENTS.filter(e=>e.day===day && favs.has(e.id)).length;
-  fc.className = 'toolbtn heartbtn' + (favOnly?' on':'');
-  fc.setAttribute('aria-pressed', favOnly);
-  fc.innerHTML = `<span class="heart-ic">${favOnly?HEART:HEART_O}</span> Faves <span class="favcount">${favToday}</span>`;
-  fc.onclick=()=>{favOnly=!favOnly; render();};
-}
-document.getElementById('segTl').onclick=()=>{ view='timeline'; render(); saveState(); };
-document.getElementById('segLv').onclick=()=>{ view='list'; render(); saveState(); };
-document.getElementById('filterBtn').onclick=()=>{ panelOpen=!panelOpen; renderFilters(); };
-document.getElementById('resetBtn').onclick=resetFilters;
+                // favourites
+                const fc = document.getElementById("favCall");
+                const favToday = EVENTS.filter(
+                    (e) => e.day === day && favs.has(e.id),
+                ).length;
+                fc.className = "toolbtn heartbtn" + (favOnly ? " on" : "");
+                fc.setAttribute("aria-pressed", favOnly);
+                fc.innerHTML = `<span class="heart-ic">${favOnly ? HEART : HEART_O}</span> Faves <span class="favcount">${favToday}</span>`;
+                fc.onclick = () => {
+                    favOnly = !favOnly;
+                    render();
+                };
+            }
+            document.getElementById("segTl").onclick = () => {
+                view = "timeline";
+                render();
+                saveState();
+            };
+            document.getElementById("segLv").onclick = () => {
+                view = "list";
+                render();
+                saveState();
+            };
+            document.getElementById("filterBtn").onclick = () => {
+                panelOpen = !panelOpen;
+                renderFilters();
+            };
+            document.getElementById("resetBtn").onclick = resetFilters;
 
-function renderTimeline(){
-  const pxm = PXM();
-  const {cm, visible} = getVisible();
+            function renderTimeline() {
+                const pxm = PXM();
+                const { cm, visible } = getVisible();
 
-  // stats
-  document.getElementById('stShown').textContent = visible.length;
-  const nClash = Object.keys(cm).length;
-  const cf = document.getElementById('stClash');
-  cf.textContent = nClash ? `▲ ${nClash} clash` : '';
-  cf.classList.toggle('show', nClash>0);
+                // stats
+                document.getElementById("stShown").textContent = visible.length;
+                const nClash = Object.keys(cm).length;
+                const cf = document.getElementById("stClash");
+                cf.textContent = nClash ? `▲ ${nClash} clash` : "";
+                cf.classList.toggle("show", nClash > 0);
 
-  const tl=document.getElementById('tl'), lv=document.getElementById('lv');
-  tl.hidden = view!=='timeline';
-  lv.hidden = view!=='list';
-  if(view==='list'){ renderList(visible, cm); return; }
+                const tl = document.getElementById("tl"),
+                    lv = document.getElementById("lv");
+                tl.hidden = view !== "timeline";
+                lv.hidden = view !== "list";
+                if (view === "list") {
+                    renderList(visible, cm);
+                    return;
+                }
 
-  if(visible.length===0){
-    tl.innerHTML = `<div class="empty-state"><div class="disp">Nothing matches</div>Loosen a filter, switch day, or heart some events first.</div>`;
-    return;
-  }
+                if (visible.length === 0) {
+                    tl.innerHTML = `<div class="empty-state"><div class="disp">Nothing matches</div>Loosen a filter, switch day, or heart some events first.</div>`;
+                    return;
+                }
 
-  // time bounds hug the visible events: snap to the nearest half hour, no dead lead-in
-  let minT = Math.min(...visible.map(e=>e.s));
-  let maxT = Math.max(...visible.map(e=>e.e));
-  minT = Math.floor(minT/30)*30;
-  maxT = Math.ceil(maxT/30)*30;
-  const span = maxT-minT;
+                // time bounds hug the visible events: snap to the nearest half hour, no dead lead-in
+                let minT = Math.min(...visible.map((e) => e.s));
+                let maxT = Math.max(...visible.map((e) => e.e));
+                minT = Math.floor(minT / 30) * 30;
+                maxT = Math.ceil(maxT / 30) * 30;
+                const span = maxT - minT;
 
-  // ruler: a tick every 30 min, hour ticks labelled
-  let ruler = `<div class="ruler" style="width:${span*pxm}px">`;
-  for(let t=minT; t<=maxT; t+=30){
-    const isHour = t%60===0;
-    const hh = Math.floor(t/60)%24, mm = t%60;
-    ruler += `<div class="tick ${isHour?'':'half'}" style="width:${30*pxm}px">${isHour?`<span>${String(hh).padStart(2,'0')}:00</span>`:''}</div>`;
-  }
-  ruler += `</div>`;
+                // ruler: a tick every 30 min, hour ticks labelled
+                let ruler = `<div class="ruler" style="width:${span * pxm}px">`;
+                for (let t = minT; t <= maxT; t += 30) {
+                    const isHour = t % 60 === 0;
+                    const hh = Math.floor(t / 60) % 24,
+                        mm = t % 60;
+                    ruler += `<div class="tick ${isHour ? "" : "half"}" style="width:${30 * pxm}px">${isHour ? `<span>${String(hh).padStart(2, "0")}:00</span>` : ""}</div>`;
+                }
+                ruler += `</div>`;
 
-  // lanes in fixed stage order, only stages with visible events
-  let lanes='';
-  for(const [k,sInfo] of Object.entries(STAGES)){
-    const evs = visible.filter(e=>e.stage===k).sort((a,b)=>a.s-b.s);
-    if(evs.length===0) continue;
-    let blocks='';
-    for(const e of evs){
-      const left=(e.s-minT)*pxm, w=Math.max((e.e-e.s)*pxm, 62);
-      const isFav=favs.has(e.id), isClash=!!cm[e.id];
-      const slim = w < 130;
-      blocks += `<div class="blk ${isFav?'fav':''} ${isClash?'clash':''} ${slim?'slim':''}" data-id="${e.id}"
-        style="--stage:${sInfo.color}; left:${left}px; width:${w-4}px">
+                // lanes in fixed stage order, only stages with visible events
+                let lanes = "";
+                for (const [k, sInfo] of Object.entries(STAGES)) {
+                    const evs = visible
+                        .filter((e) => e.stage === k)
+                        .sort((a, b) => a.s - b.s);
+                    if (evs.length === 0) continue;
+                    let blocks = "";
+                    for (const e of evs) {
+                        const left = (e.s - minT) * pxm,
+                            w = Math.max((e.e - e.s) * pxm, 62);
+                        const isFav = favs.has(e.id),
+                            isClash = !!cm[e.id];
+                        const slim = w < 130;
+                        blocks += `<div class="blk ${isFav ? "fav" : ""} ${isClash ? "clash" : ""} ${slim ? "slim" : ""}" data-id="${e.id}"
+        style="--stage:${sInfo.color}; left:${left}px; width:${w - 4}px">
         <span class="t">${e.title}</span>
-        ${slim?'':`<span class="m">${fmtT(e.start)}–${fmtT(e.end)}${e.sub?' · '+e.sub:''}</span>`}
-        <button class="blk-heart ${isFav?'on':''}" data-heart="${e.id}" aria-label="${isFav?'Remove from faves':'Add to faves'}">${isFav?HEART:HEART_O}</button>
+        ${slim ? "" : `<span class="m">${fmtT(e.start)}–${fmtT(e.end)}${e.sub ? " · " + e.sub : ""}</span>`}
+        <button class="blk-heart ${isFav ? "on" : ""}" data-heart="${e.id}" aria-label="${isFav ? "Remove from faves" : "Add to faves"}">${isFav ? HEART : HEART_O}</button>
       </div>`;
-    }
-    lanes += `<div class="lane">
+                    }
+                    lanes += `<div class="lane">
       <div class="lane-label"><span class="bar" style="background:${sInfo.color}"></span><span class="nm">${sInfo.name}</span><span class="ct">${evs.length} on</span></div>
-      <div class="lane-track" style="width:${span*pxm}px">${blocks}</div>
+      <div class="lane-track" style="width:${span * pxm}px">${blocks}</div>
     </div>`;
-  }
+                }
 
-  const keepX=tl.scrollLeft, keepY=tl.scrollTop;
-  tl.innerHTML = `<div class="tl-inner">${ruler}${lanes}</div>`;
-  tl.scrollLeft=keepX; tl.scrollTop=keepY;
-  tl.querySelectorAll('.blk').forEach(b=>b.onclick=()=>openSheet(b.dataset.id));
-  tl.querySelectorAll('.blk-heart').forEach(h=>h.onclick=(ev)=>{
-    ev.stopPropagation();
-    toggleFav(h.dataset.heart);
-  });
-}
+                const keepX = tl.scrollLeft,
+                    keepY = tl.scrollTop;
+                tl.innerHTML = `<div class="tl-inner">${ruler}${lanes}</div>`;
+                tl.scrollLeft = keepX;
+                tl.scrollTop = keepY;
+                tl.querySelectorAll(".blk").forEach(
+                    (b) => (b.onclick = () => openSheet(b.dataset.id)),
+                );
+                tl.querySelectorAll(".blk-heart").forEach(
+                    (h) =>
+                        (h.onclick = (ev) => {
+                            ev.stopPropagation();
+                            toggleFav(h.dataset.heart);
+                        }),
+                );
+            }
 
-function renderList(visible, cm){
-  const lv=document.getElementById('lv');
-  if(visible.length===0){
-    lv.innerHTML = `<div class="empty-state"><div class="disp">Nothing matches</div>Loosen a filter, switch day, or heart some events first.</div>`;
-    return;
-  }
-  let html='';
-  for(const [k,sInfo] of Object.entries(STAGES)){
-    const evs = visible.filter(e=>e.stage===k).sort((a,b)=>a.s-b.s || a.e-b.e);
-    if(evs.length===0) continue;
-    html += `<div class="lv-stagehead" style="--stage:${sInfo.color}">
+            function renderList(visible, cm) {
+                const lv = document.getElementById("lv");
+                if (visible.length === 0) {
+                    lv.innerHTML = `<div class="empty-state"><div class="disp">Nothing matches</div>Loosen a filter, switch day, or heart some events first.</div>`;
+                    return;
+                }
+                let html = "";
+                for (const [k, sInfo] of Object.entries(STAGES)) {
+                    const evs = visible
+                        .filter((e) => e.stage === k)
+                        .sort((a, b) => a.s - b.s || a.e - b.e);
+                    if (evs.length === 0) continue;
+                    html += `<div class="lv-stagehead" style="--stage:${sInfo.color}">
       <span class="bar"></span>
       <span class="nm">${sInfo.name}</span>
       <span class="ct mono">${evs.length} on</span>
     </div>`;
-    for(const e of evs){
-      const isFav=favs.has(e.id), clashes=cm[e.id];
-      html+=`<div class="lv-card ${isFav?'fav':''}" data-id="${e.id}" style="--stage:${sInfo.color}">
+                    for (const e of evs) {
+                        const isFav = favs.has(e.id),
+                            clashes = cm[e.id];
+                        html += `<div class="lv-card ${isFav ? "fav" : ""}" data-id="${e.id}" style="--stage:${sInfo.color}">
         <div class="lv-time">${fmtT(e.start)}<small>${fmtT(e.end)}</small></div>
         <div class="lv-body">
           <div class="lv-title">${e.title}</div>
-          ${e.sub?`<div class="lv-sub">${e.sub}</div>`:''}
-          ${clashes?`<div class="lv-clash">▲ Clashes with ${clashes.map(c=>c.title).join(' · ')}</div>`:''}
+          ${e.sub ? `<div class="lv-sub">${e.sub}</div>` : ""}
+          ${clashes ? `<div class="lv-clash">▲ Clashes with ${clashes.map((c) => c.title).join(" · ")}</div>` : ""}
         </div>
-        <button class="blk-heart ${isFav?'on':''}" data-heart="${e.id}" aria-label="${isFav?'Remove from faves':'Add to faves'}">${isFav?HEART:HEART_O}</button>
+        <button class="blk-heart ${isFav ? "on" : ""}" data-heart="${e.id}" aria-label="${isFav ? "Remove from faves" : "Add to faves"}">${isFav ? HEART : HEART_O}</button>
       </div>`;
-    }
-  }
-  const keepY=lv.scrollTop;
-  lv.innerHTML=html;
-  lv.scrollTop=keepY;
-  lv.querySelectorAll('.lv-card').forEach(c=>c.onclick=()=>openSheet(c.dataset.id));
-  lv.querySelectorAll('.blk-heart').forEach(h=>h.onclick=(ev)=>{
-    ev.stopPropagation();
-    toggleFav(h.dataset.heart);
-  });
-}
+                    }
+                }
+                const keepY = lv.scrollTop;
+                lv.innerHTML = html;
+                lv.scrollTop = keepY;
+                lv.querySelectorAll(".lv-card").forEach(
+                    (c) => (c.onclick = () => openSheet(c.dataset.id)),
+                );
+                lv.querySelectorAll(".blk-heart").forEach(
+                    (h) =>
+                        (h.onclick = (ev) => {
+                            ev.stopPropagation();
+                            toggleFav(h.dataset.heart);
+                        }),
+                );
+            }
 
-/* ---------------- SHEET ---------------- */
-const sheet=document.getElementById('sheet'), scrim=document.getElementById('scrim');
-function openSheet(id){ openId=id; renderSheet(id); sheet.classList.add('open'); scrim.classList.add('open'); }
-function closeSheet(){ openId=null; sheet.classList.remove('open'); scrim.classList.remove('open'); }
-scrim.onclick=()=>{
-  closeSheet();
-  const m=document.getElementById('storageModal');
-  if(m.classList.contains('open')){
-    m.classList.remove('open');
-    try{ sessionStorage.setItem('vco-warned','1'); }catch(e){}
-  }
-};
+            /* ---------------- SHEET ---------------- */
+            const sheet = document.getElementById("sheet"),
+                scrim = document.getElementById("scrim");
+            function openSheet(id) {
+                openId = id;
+                renderSheet(id);
+                sheet.classList.add("open");
+                scrim.classList.add("open");
+            }
+            function closeSheet() {
+                openId = null;
+                sheet.classList.remove("open");
+                scrim.classList.remove("open");
+            }
+            scrim.onclick = () => {
+                closeSheet();
+                const m = document.getElementById("storageModal");
+                if (m.classList.contains("open")) {
+                    m.classList.remove("open");
+                    try {
+                        sessionStorage.setItem("vco-warned", "1");
+                    } catch (e) {}
+                }
+            };
 
-function renderSheet(id){
-  const e=EVENTS.find(x=>x.id===id); if(!e) return;
-  const sInfo=STAGES[e.stage];
-  const cm=clashMap(EVENTS.filter(x=>x.day===e.day));
-  const clashes=cm[e.id]||[];
-  const dur=e.e-e.s;
-  const durTxt = dur>=60 ? `${Math.floor(dur/60)}h${dur%60?` ${dur%60}m`:''}` : `${dur}m`;
-  const isFav=favs.has(e.id);
-  sheet.innerHTML = `
+            function renderSheet(id) {
+                const e = EVENTS.find((x) => x.id === id);
+                if (!e) return;
+                const sInfo = STAGES[e.stage];
+                const cm = clashMap(EVENTS.filter((x) => x.day === e.day));
+                const clashes = cm[e.id] || [];
+                const dur = e.e - e.s;
+                const durTxt =
+                    dur >= 60
+                        ? `${Math.floor(dur / 60)}h${dur % 60 ? ` ${dur % 60}m` : ""}`
+                        : `${dur}m`;
+                const isFav = favs.has(e.id);
+                sheet.innerHTML = `
     <div class="grab"></div>
     <div class="stage-chip"><i style="background:${sInfo.color}"></i>${sInfo.name} · ${DAY_LONG[e.day]} · ${TYPES[e.type]}</div>
     <h2>${e.title}</h2>
-    ${e.sub?`<div class="sub">${e.sub}</div>`:''}
+    ${e.sub ? `<div class="sub">${e.sub}</div>` : ""}
     <div class="when mono">${fmtT(e.start)} – ${fmtT(e.end)} <span class="dur">${durTxt}</span></div>
-    ${clashes.length?`<div class="clashbox"><b>Clashes with your faves:</b><br>${clashes.map(c=>`${c.title} (${STAGES[c.stage].name}, ${fmtT(c.start)}–${fmtT(c.end)})`).join('<br>')}</div>`:''}
-    <button class="favbtn ${isFav?'on':''}" id="sheetFav">${isFav?HEART:HEART_O} ${isFav?'In your faves':'Add to faves'}</button>
+    ${clashes.length ? `<div class="clashbox"><b>Clashes with your faves:</b><br>${clashes.map((c) => `${c.title} (${STAGES[c.stage].name}, ${fmtT(c.start)}–${fmtT(c.end)})`).join("<br>")}</div>` : ""}
+    <button class="favbtn ${isFav ? "on" : ""}" id="sheetFav">${isFav ? HEART : HEART_O} ${isFav ? "In your faves" : "Add to faves"}</button>
   `;
-  document.getElementById('sheetFav').onclick=()=>toggleFav(e.id);
-}
+                document.getElementById("sheetFav").onclick = () =>
+                    toggleFav(e.id);
+            }
 
-/* ---------------- BOOT ---------------- */
-function render(){ renderDaybar(); renderFilters(); renderTimeline(); }
-window.addEventListener('resize', renderTimeline);
-applyTheme();
-render();
-loadState();
+            /* ---------------- BOOT ---------------- */
+            function render() {
+                renderDaybar();
+                renderFilters();
+                renderTimeline();
+            }
+            window.addEventListener("resize", renderTimeline);
+            applyTheme();
+            render();
+            loadState();
 
-/* Warn once if the browser blocks storage — favourites and offline
+            /* Warn once if the browser blocks storage — favourites and offline
    caching silently fail in Brave-strict, private windows, etc. */
-(function storageWarning(){
-  if(hasLS) return; // storage works, nothing to warn about
-  let shownThisSession=false;
-  try{ shownThisSession = sessionStorage.getItem('vco-warned')==='1'; }catch(e){}
-  if(shownThisSession) return;
-  const modal=document.getElementById('storageModal'), scrim=document.getElementById('scrim');
-  document.getElementById('smClose').onclick=()=>{
-    modal.classList.remove('open'); scrim.classList.remove('open');
-    try{ sessionStorage.setItem('vco-warned','1'); }catch(e){}
-  };
-  setTimeout(()=>{ modal.classList.add('open'); scrim.classList.add('open'); }, 500);
-})();
+            (function storageWarning() {
+                if (hasLS) return; // storage works, nothing to warn about
+                let shownThisSession = false;
+                try {
+                    shownThisSession =
+                        sessionStorage.getItem("vco-warned") === "1";
+                } catch (e) {}
+                if (shownThisSession) return;
+                const modal = document.getElementById("storageModal"),
+                    scrim = document.getElementById("scrim");
+                document.getElementById("smClose").onclick = () => {
+                    modal.classList.remove("open");
+                    scrim.classList.remove("open");
+                    try {
+                        sessionStorage.setItem("vco-warned", "1");
+                    } catch (e) {}
+                };
+                setTimeout(() => {
+                    modal.classList.add("open");
+                    scrim.classList.add("open");
+                }, 500);
+            })();
 
-/* Offline support on real hosting (GitHub Pages etc). Silently skipped
+            /* Offline support on real hosting (GitHub Pages etc). Silently skipped
    in previews or browsers without service worker support. */
-if('serviceWorker' in navigator && location.protocol==='https:'){
-  window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
-  });
-}
-</script>
-</body>
+            if (
+                "serviceWorker" in navigator &&
+                location.protocol === "https:"
+            ) {
+                window.addEventListener("load", () => {
+                    navigator.serviceWorker.register("sw.js").catch(() => {});
+                });
+            }
+        </script>
+    </body>
 </html>
