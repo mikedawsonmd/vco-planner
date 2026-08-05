@@ -115,6 +115,7 @@
                 background: var(--ink);
             }
             .masthead {
+                position: relative;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
@@ -131,7 +132,17 @@
                 font-style: normal;
                 color: var(--red);
             }
-            .theme-toggle {
+            .masthead-actions {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .masthead.searching .wordmark,
+            .masthead.searching .masthead-actions {
+                visibility: hidden;
+            }
+            .theme-toggle,
+            .search-toggle {
                 border: 1.5px solid var(--line);
                 background: var(--surface);
                 color: var(--paper);
@@ -144,11 +155,83 @@
                 align-items: center;
                 justify-content: center;
                 transition: 0.15s;
+                flex: 0 0 auto;
             }
-            .theme-toggle:hover {
+            .theme-toggle:hover,
+            .search-toggle:hover {
                 border-color: var(--muted);
             }
-            .theme-toggle .material-symbols-outlined {
+            .theme-toggle .material-symbols-outlined,
+            .search-toggle .material-symbols-outlined {
+                font-size: 20px;
+            }
+            .search-bar {
+                position: absolute;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: var(--ink);
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                transform: translateY(-2px);
+                transition:
+                    opacity 0.15s,
+                    transform 0.15s;
+            }
+            .search-bar.open {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto;
+                transform: none;
+            }
+            .search-bar .search-ic {
+                flex: 0 0 auto;
+                font-size: 20px;
+                color: var(--muted);
+            }
+            .search-bar input {
+                flex: 1 1 auto;
+                min-width: 0;
+                border: 1.5px solid var(--line);
+                background: var(--surface);
+                color: var(--paper);
+                border-radius: 999px;
+                padding: 9px 14px;
+                font-size: 15px;
+                font-family: inherit;
+            }
+            .search-bar input:focus {
+                outline: none;
+                border-color: var(--red);
+            }
+            .search-bar input::placeholder {
+                color: var(--faint);
+            }
+            .search-bar input::-webkit-search-decoration,
+            .search-bar input::-webkit-search-cancel-button {
+                -webkit-appearance: none;
+            }
+            .search-clear {
+                flex: 0 0 auto;
+                border: none;
+                background: none;
+                color: var(--muted);
+                cursor: pointer;
+                padding: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 999px;
+            }
+            .search-clear:hover {
+                color: var(--paper);
+            }
+            .search-clear[hidden] {
+                display: none;
+            }
+            .search-clear .material-symbols-outlined {
                 font-size: 20px;
             }
 
@@ -1173,17 +1256,50 @@
     </head>
     <body>
         <header>
-            <div class="masthead">
+            <div class="masthead" id="masthead">
                 <div class="wordmark">VCO <em>/ Planner</em></div>
-                <button
-                    class="theme-toggle"
-                    id="themeToggle"
-                    aria-label="Switch colour theme"
-                >
-                    <span class="material-symbols-outlined" id="themeIcon"
-                        >dark_mode</span
+                <div class="masthead-actions">
+                    <button
+                        class="search-toggle"
+                        id="searchToggle"
+                        aria-label="Search events"
+                        aria-expanded="false"
                     >
-                </button>
+                        <span class="material-symbols-outlined">search</span>
+                    </button>
+                    <button
+                        class="theme-toggle"
+                        id="themeToggle"
+                        aria-label="Switch colour theme"
+                    >
+                        <span class="material-symbols-outlined" id="themeIcon"
+                            >dark_mode</span
+                        >
+                    </button>
+                </div>
+                <div class="search-bar" id="searchBar">
+                    <span class="material-symbols-outlined search-ic"
+                        >search</span
+                    >
+                    <input
+                        type="search"
+                        id="searchInput"
+                        placeholder="Search events…"
+                        autocomplete="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        enterkeyhint="search"
+                        aria-label="Search events"
+                    />
+                    <button
+                        class="search-clear"
+                        id="searchClear"
+                        aria-label="Clear search"
+                        hidden
+                    >
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
             </div>
             <div class="daybar" id="daybar"></div>
         </header>
@@ -2465,6 +2581,7 @@
             let view = "timeline";
             let panelOpen = false;
             let openId = null;
+            let searchQ = "";
 
             const PXM = () =>
                 parseFloat(
@@ -2579,6 +2696,48 @@
                 saveState();
             };
 
+            /* ---------------- SEARCH UI ----------------
+   Tap the icon: bar expands full-width and grabs focus (opens the mobile
+   keyboard). Tap/click away: keyboard closes; if text remains, the bar
+   stays expanded showing a clear button; if empty, it collapses back to
+   just the icon. */
+            const masthead = document.getElementById("masthead"),
+                searchToggle = document.getElementById("searchToggle"),
+                searchBar = document.getElementById("searchBar"),
+                searchInput = document.getElementById("searchInput"),
+                searchClear = document.getElementById("searchClear");
+            function openSearch() {
+                masthead.classList.add("searching");
+                searchBar.classList.add("open");
+                searchToggle.setAttribute("aria-expanded", "true");
+                searchInput.focus();
+            }
+            function collapseSearch() {
+                masthead.classList.remove("searching");
+                searchBar.classList.remove("open");
+                searchToggle.setAttribute("aria-expanded", "false");
+            }
+            searchToggle.onclick = openSearch;
+            searchInput.oninput = () => {
+                searchQ = searchInput.value;
+                searchClear.hidden = searchQ.length === 0;
+                renderTimeline();
+            };
+            searchInput.addEventListener("keydown", (ev) => {
+                if (ev.key === "Enter" || ev.key === "Escape")
+                    searchInput.blur();
+            });
+            searchInput.addEventListener("blur", () => {
+                if (!searchQ) collapseSearch();
+            });
+            searchClear.onclick = () => {
+                searchInput.value = "";
+                searchQ = "";
+                searchClear.hidden = true;
+                collapseSearch();
+                renderTimeline();
+            };
+
             /* ---------------- CLASHES (among favourites, per day) ---------------- */
             function clashMap(dayEvents) {
                 const f = dayEvents.filter((ev) => favs.has(ev.id));
@@ -2612,6 +2771,105 @@
                 );
             }
 
+            /* ---------------- SEARCH (event titles only, typo/UK-US forgiving) ---------------- */
+            // Common UK -> US spelling variants that could plausibly show up in an event title.
+            const UK_US_PAIRS = [
+                ["colour", "color"],
+                ["favourite", "favorite"],
+                ["flavour", "flavor"],
+                ["honour", "honor"],
+                ["neighbour", "neighbor"],
+                ["organise", "organize"],
+                ["organisation", "organization"],
+                ["realise", "realize"],
+                ["recognise", "recognize"],
+                ["centre", "center"],
+                ["theatre", "theater"],
+                ["programme", "program"],
+                ["dialogue", "dialog"],
+                ["catalogue", "catalog"],
+                ["travelling", "traveling"],
+                ["traveller", "traveler"],
+                ["modelling", "modeling"],
+                ["fulfil", "fulfill"],
+                ["defence", "defense"],
+                ["licence", "license"],
+                ["practise", "practice"],
+                ["aluminium", "aluminum"],
+                ["grey", "gray"],
+                ["yoghurt", "yogurt"],
+                ["doughnut", "donut"],
+                ["mould", "mold"],
+                ["jewellery", "jewelry"],
+                ["cosy", "cozy"],
+                ["plough", "plow"],
+            ];
+            function usSpelling(s) {
+                let out = s;
+                for (const [uk, us] of UK_US_PAIRS)
+                    out = out.replace(new RegExp(uk, "g"), us);
+                return out;
+            }
+            function normText(s) {
+                return usSpelling(
+                    s
+                        .toLowerCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "")
+                        .replace(/[^a-z0-9\s]/g, " ")
+                        .replace(/\s+/g, " ")
+                        .trim(),
+                );
+            }
+            function levenshtein(a, b) {
+                if (a === b) return 0;
+                const m = a.length,
+                    n = b.length;
+                if (!m) return n;
+                if (!n) return m;
+                const dp = new Array(n + 1);
+                for (let j = 0; j <= n; j++) dp[j] = j;
+                for (let i = 1; i <= m; i++) {
+                    let prev = dp[0];
+                    dp[0] = i;
+                    for (let j = 1; j <= n; j++) {
+                        const tmp = dp[j];
+                        dp[j] =
+                            a[i - 1] === b[j - 1]
+                                ? prev
+                                : 1 + Math.min(prev, dp[j], dp[j - 1]);
+                        prev = tmp;
+                    }
+                }
+                return dp[n];
+            }
+            // Substring match first; otherwise every query word must fuzzily match some title word
+            // (edit-distance tolerance scales with word length, so short words stay strict).
+            function titleMatches(query, title) {
+                const q = normText(query);
+                if (!q) return true;
+                const t = normText(title);
+                if (t.includes(q)) return true;
+                const tWords = t.split(" ").filter(Boolean);
+                return q
+                    .split(" ")
+                    .filter(Boolean)
+                    .every((qw) =>
+                        tWords.some((tw) => {
+                            // ignore trivial substring hits against 1-letter words ("a", "i")
+                            if (
+                                qw.length >= 2 &&
+                                tw.length >= 2 &&
+                                (tw.includes(qw) || qw.includes(tw))
+                            )
+                                return true;
+                            const maxDist =
+                                qw.length <= 4 ? 1 : qw.length <= 7 ? 2 : 3;
+                            return levenshtein(qw, tw) <= maxDist;
+                        }),
+                    );
+            }
+
             /* shared visibility + stats, used by both views */
             function getVisible() {
                 const dayEvents = EVENTS.filter((e) => e.day === day);
@@ -2620,7 +2878,8 @@
                     (e) =>
                         stageF.has(e.stage) &&
                         typeF.has(e.type) &&
-                        (!favOnly || favs.has(e.id)),
+                        (!favOnly || favs.has(e.id)) &&
+                        titleMatches(searchQ, e.title),
                 );
                 return { dayEvents, cm, visible };
             }
