@@ -2869,12 +2869,13 @@
                 }
                 return dp[n];
             }
-            // Substring match first; otherwise every query word must fuzzily match some title word
-            // (edit-distance tolerance scales with word length, so short words stay strict).
-            function titleMatches(query, title) {
+            // Substring match first; otherwise every query word must fuzzily match some
+            // haystack word (edit-distance tolerance scales with word length, so short
+            // words stay strict).
+            function textMatches(query, text) {
                 const q = normText(query);
                 if (!q) return true;
-                const t = normText(title);
+                const t = normText(text);
                 if (t.includes(q)) return true;
                 const tWords = t.split(" ").filter(Boolean);
                 return q
@@ -2882,18 +2883,36 @@
                     .filter(Boolean)
                     .every((qw) =>
                         tWords.some((tw) => {
-                            // ignore trivial substring hits against 1-letter words ("a", "i")
+                            // ignore trivial substring hits against short words ("am", "in") —
+                            // otherwise 3-letter queries match almost anything by chance
                             if (
-                                qw.length >= 2 &&
-                                tw.length >= 2 &&
+                                qw.length >= 3 &&
+                                tw.length >= 3 &&
                                 (tw.includes(qw) || qw.includes(tw))
                             )
                                 return true;
+                            // typo tolerance: none for very short words (too ambiguous),
+                            // scaling up for longer ones
                             const maxDist =
-                                qw.length <= 4 ? 1 : qw.length <= 7 ? 2 : 3;
+                                qw.length <= 3
+                                    ? 0
+                                    : qw.length <= 5
+                                      ? 1
+                                      : qw.length <= 8
+                                        ? 2
+                                        : 3;
                             return levenshtein(qw, tw) <= maxDist;
                         }),
                     );
+            }
+            // Searches the title, description and event-type label (eg "Talks",
+            // "Live music") — not the stage name, so searching a stage doesn't just
+            // list everything on it.
+            function eventMatches(query, e) {
+                return textMatches(
+                    query,
+                    `${e.title} ${e.sub} ${TYPES[e.type] || ""}`,
+                );
             }
 
             function searchActive() {
@@ -2922,7 +2941,7 @@
                         stageF.has(e.stage) &&
                         typeF.has(e.type) &&
                         (!favOnly || favs.has(e.id)) &&
-                        titleMatches(searchQ, e.title),
+                        eventMatches(searchQ, e),
                 );
                 return { dayEvents, cm, visible, searching };
             }
