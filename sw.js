@@ -6,7 +6,7 @@
    Bump VERSION whenever you change the schedule or the app so old
    caches are cleared. */
 
-const VERSION = 'vco-planner-v7';
+const VERSION = 'vco-planner-v8';
 const SHELL = ['./', './index.html', './manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
@@ -30,9 +30,11 @@ self.addEventListener('fetch', (e) => {
   const isNavigation = req.mode === 'navigate' || (req.destination === 'document');
 
   if (isNavigation) {
-    // Network first so pushed schedule fixes arrive; cached copy offline.
+    // Network first, bypassing the browser's own HTTP cache too — schedule
+    // edits should never wait on a stale disk-cached copy. Cache fallback
+    // only kicks in offline.
     e.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'reload' })
         .then((res) => {
           const copy = res.clone();
           caches.open(VERSION).then((c) => c.put(req, copy));
