@@ -321,6 +321,10 @@
                 background: var(--paper);
                 color: var(--ink);
             }
+            .seg-btn:disabled {
+                opacity: 0.4;
+                cursor: default;
+            }
             .toolbtn {
                 flex: 0 0 auto;
                 position: relative;
@@ -515,6 +519,28 @@
                 padding: 0 18px 60px;
                 max-width: 680px;
                 margin: 0 auto;
+            }
+            .lv-dayhead {
+                display: flex;
+                align-items: baseline;
+                gap: 10px;
+                margin: 0 0 2px;
+                padding: 22px 0 8px;
+                border-bottom: 2px solid var(--line);
+            }
+            .lv-dayhead:first-child {
+                padding-top: 4px;
+            }
+            .lv-dayhead .nm {
+                font-family: "Bricolage Grotesque";
+                font-size: 22px;
+                font-weight: 800;
+                letter-spacing: -0.02em;
+            }
+            .lv-dayhead .ct {
+                font-size: 12px;
+                color: var(--faint);
+                margin-left: auto;
             }
             .lv-stagehead {
                 display: flex;
@@ -2721,7 +2747,7 @@
             searchInput.oninput = () => {
                 searchQ = searchInput.value;
                 searchClear.hidden = searchQ.length === 0;
-                renderTimeline();
+                render();
             };
             searchInput.addEventListener("keydown", (ev) => {
                 if (ev.key === "Enter" || ev.key === "Escape")
@@ -2735,7 +2761,7 @@
                 searchQ = "";
                 searchClear.hidden = true;
                 collapseSearch();
-                renderTimeline();
+                render();
             };
 
             /* ---------------- CLASHES (among favourites, per day) ---------------- */
@@ -2870,18 +2896,35 @@
                     );
             }
 
-            /* shared visibility + stats, used by both views */
+            function searchActive() {
+                return normText(searchQ).length > 0;
+            }
+
+            /* shared visibility + stats, used by both views.
+   A live search spans every day of the festival; clashes still only ever
+   compare events within the same day, so per-day clash maps are merged. */
             function getVisible() {
+                const searching = searchActive();
                 const dayEvents = EVENTS.filter((e) => e.day === day);
-                const cm = clashMap(dayEvents);
-                const visible = dayEvents.filter(
+                const scopeEvents = searching ? EVENTS : dayEvents;
+                const cm = searching
+                    ? DAYS.reduce(
+                          (acc, d) =>
+                              Object.assign(
+                                  acc,
+                                  clashMap(EVENTS.filter((e) => e.day === d)),
+                              ),
+                          {},
+                      )
+                    : clashMap(dayEvents);
+                const visible = scopeEvents.filter(
                     (e) =>
                         stageF.has(e.stage) &&
                         typeF.has(e.type) &&
                         (!favOnly || favs.has(e.id)) &&
                         titleMatches(searchQ, e.title),
                 );
-                return { dayEvents, cm, visible };
+                return { dayEvents, cm, visible, searching };
             }
             function activeFilterCount() {
                 let n = 0;
@@ -2963,7 +3006,9 @@
                         }),
                 );
 
-                // view toggle
+                // view toggle — disabled while searching, since results always
+                // render as a day-grouped list spanning the whole weekend
+                const searching = searchActive();
                 document.getElementById("segTl").className =
                     "seg-btn" + (view === "timeline" ? " on" : "");
                 document.getElementById("segLv").className =
@@ -2974,6 +3019,8 @@
                 document
                     .getElementById("segLv")
                     .setAttribute("aria-selected", view === "list");
+                document.getElementById("segTl").disabled = searching;
+                document.getElementById("segLv").disabled = searching;
 
                 // filter button + badge showing active filter groups when the panel is shut
                 const fb = document.getElementById("filterBtn");
@@ -3017,7 +3064,7 @@
 
             function renderTimeline() {
                 const pxm = PXM();
-                const { cm, visible } = getVisible();
+                const { cm, visible, searching } = getVisible();
 
                 // stats
                 document.getElementById("stShown").textContent = visible.length;
@@ -3028,6 +3075,16 @@
 
                 const tl = document.getElementById("tl"),
                     lv = document.getElementById("lv");
+
+                // a search spans every day, so it always renders as a day-grouped
+                // list — the timeline view can't meaningfully show multiple days at once
+                if (searching) {
+                    tl.hidden = true;
+                    lv.hidden = false;
+                    renderSearchResults(visible, cm);
+                    return;
+                }
+
                 tl.hidden = view !== "timeline";
                 lv.hidden = view !== "list";
                 if (view === "list") {
@@ -3194,27 +3251,10 @@
                 }
             }
 
-            function renderList(visible, cm) {
-                const lv = document.getElementById("lv");
-                if (visible.length === 0) {
-                    lv.innerHTML = `<div class="empty-state"><div class="disp">Nothing matches</div>Loosen a filter, switch day, or heart some events first.</div>`;
-                    return;
-                }
-                let html = "";
-                for (const [k, sInfo] of Object.entries(STAGES)) {
-                    const evs = visible
-                        .filter((e) => e.stage === k)
-                        .sort((a, b) => a.s - b.s || a.e - b.e);
-                    if (evs.length === 0) continue;
-                    html += `<div class="lv-stagehead" style="--stage:${sInfo.color}">
-      <span class="bar"></span>
-      <span class="nm">${sInfo.name}</span>
-      <span class="ct mono">${evs.length} on</span>
-    </div>`;
-                    for (const e of evs) {
-                        const isFav = favs.has(e.id),
-                            clashes = cm[e.id];
-                        html += `<div class="lv-card ${isFav ? "fav" : ""} ${isPast(e) ? "past" : ""}" data-id="${e.id}" style="--stage:${sInfo.color}">
+            function eventCardHtml(e, cm, stageColor) {
+                const isFav = favs.has(e.id),
+                    clashes = cm[e.id];
+                return `<div class="lv-card ${isFav ? "fav" : ""} ${isPast(e) ? "past" : ""}" data-id="${e.id}" style="--stage:${stageColor}">
         <div class="lv-time">${fmtT(e.start)}<small>${fmtT(e.end)}</small></div>
         <div class="lv-body">
           <div class="lv-title">${e.title}</div>
@@ -3223,8 +3263,27 @@
         </div>
         <button class="blk-heart ${isFav ? "on" : ""}" data-heart="${e.id}" aria-label="${isFav ? "Remove from faves" : "Add to faves"}">${isFav ? HEART : HEART_O}</button>
       </div>`;
-                    }
+            }
+            // events grouped into stage sections, in fixed stage order — shared by
+            // the plain list view and the (day-grouped) search results view
+            function stageGroupsHtml(evs, cm) {
+                let html = "";
+                for (const [k, sInfo] of Object.entries(STAGES)) {
+                    const stageEvs = evs
+                        .filter((e) => e.stage === k)
+                        .sort((a, b) => a.s - b.s || a.e - b.e);
+                    if (stageEvs.length === 0) continue;
+                    html += `<div class="lv-stagehead" style="--stage:${sInfo.color}">
+      <span class="bar"></span>
+      <span class="nm">${sInfo.name}</span>
+      <span class="ct mono">${stageEvs.length} on</span>
+    </div>`;
+                    for (const e of stageEvs)
+                        html += eventCardHtml(e, cm, sInfo.color);
                 }
+                return html;
+            }
+            function finishListRender(lv, html) {
                 const keepY = lv.scrollTop;
                 lv.innerHTML = html;
                 lv.scrollTop = keepY;
@@ -3238,6 +3297,34 @@
                             toggleFav(h.dataset.heart);
                         }),
                 );
+            }
+            function renderList(visible, cm) {
+                const lv = document.getElementById("lv");
+                if (visible.length === 0) {
+                    lv.innerHTML = `<div class="empty-state"><div class="disp">Nothing matches</div>Loosen a filter, switch day, or heart some events first.</div>`;
+                    return;
+                }
+                finishListRender(lv, stageGroupsHtml(visible, cm));
+            }
+            // search spans the whole weekend: group by day first, then by stage
+            // within each day, same visual language as the plain list view
+            function renderSearchResults(visible, cm) {
+                const lv = document.getElementById("lv");
+                if (visible.length === 0) {
+                    lv.innerHTML = `<div class="empty-state"><div class="disp">Nothing matches</div>Try a different spelling, or clear the search.</div>`;
+                    return;
+                }
+                let html = "";
+                for (const d of DAYS) {
+                    const dayEvs = visible.filter((e) => e.day === d);
+                    if (dayEvs.length === 0) continue;
+                    html += `<div class="lv-dayhead">
+      <span class="nm">${DAY_LONG[d]}</span>
+      <span class="ct mono">${dayEvs.length} match${dayEvs.length === 1 ? "" : "es"}</span>
+    </div>`;
+                    html += stageGroupsHtml(dayEvs, cm);
+                }
+                finishListRender(lv, html);
             }
 
             /* ---------------- SHEET ---------------- */
