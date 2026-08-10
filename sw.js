@@ -6,8 +6,8 @@
    Bump VERSION whenever you change the schedule or the app so old
    caches are cleared. */
 
-const VERSION = 'vco-planner-v8';
-const SHELL = ['./', './index.html', './manifest.webmanifest'];
+const VERSION = 'vco-planner-v9';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './images/map.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(

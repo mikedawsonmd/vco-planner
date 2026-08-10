@@ -37,6 +37,7 @@
                 --px-per-min: 3.6;
                 --lane-h: 100px;
                 --ruler-h: 48px;
+                --tabbar-h: 62px;
             }
             [data-theme="light"] {
                 --ink: #f4f2ec;
@@ -117,6 +118,11 @@
                 padding: calc(14px + env(safe-area-inset-top)) 18px 0;
                 background: var(--ink);
             }
+            /* on the map page the daybar (which normally gives the header its
+   bottom breathing room) is hidden, so add it back explicitly */
+            header.map-header {
+                padding-bottom: 16px;
+            }
             .masthead {
                 position: relative;
                 display: flex;
@@ -141,9 +147,103 @@
                 gap: 8px;
             }
             .masthead.searching .wordmark,
-            .masthead.searching .masthead-actions {
+            .masthead.searching .masthead-actions,
+            .masthead.searching .topnav {
                 visibility: hidden;
             }
+
+            /* desktop top nav: hidden on mobile, where the bottom tab bar takes over */
+            .topnav {
+                display: none;
+                align-items: center;
+                gap: 4px;
+            }
+            .topnav-btn {
+                display: flex;
+                align-items: center;
+                gap: 7px;
+                border: 1.5px solid transparent;
+                background: transparent;
+                color: var(--muted);
+                cursor: pointer;
+                padding: 9px 16px;
+                border-radius: 999px;
+                font-size: 14px;
+                font-weight: 700;
+                transition: 0.15s;
+            }
+            .topnav-btn .material-symbols-outlined {
+                font-size: 19px;
+            }
+            .topnav-btn:hover {
+                color: var(--paper);
+                background: var(--surface);
+                border-color: var(--line);
+            }
+            .topnav-btn.active {
+                background: var(--paper);
+                color: var(--ink);
+                border-color: var(--paper);
+            }
+            .topnav-btn.active:hover {
+                background: var(--paper);
+                color: var(--ink);
+            }
+
+            /* mobile bottom tab bar: hidden on desktop, where the top nav takes over */
+            .tabbar {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 30;
+                display: flex;
+                background: var(--surface);
+                border-top: 1px solid var(--line);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .tab-btn {
+                flex: 1 1 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 3px;
+                border: none;
+                background: none;
+                color: var(--faint);
+                cursor: pointer;
+                padding: 9px 0 7px;
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 0.01em;
+                transition: color 0.15s;
+            }
+            .tab-btn .material-symbols-outlined {
+                font-size: 23px;
+            }
+            .tab-btn:hover {
+                color: var(--muted);
+            }
+            .tab-btn.active {
+                color: var(--red);
+            }
+            .tab-btn:active {
+                opacity: 0.7;
+            }
+
+            @media (min-width: 760px) {
+                .topnav {
+                    display: flex;
+                }
+                .tabbar {
+                    display: none;
+                }
+                :root {
+                    --tabbar-h: 0px;
+                }
+            }
+
             .theme-toggle,
             .search-toggle {
                 border: 1.5px solid var(--line);
@@ -159,6 +259,9 @@
                 justify-content: center;
                 transition: 0.15s;
                 flex: 0 0 auto;
+            }
+            .search-toggle[hidden] {
+                display: none;
             }
             .theme-toggle:hover,
             .search-toggle:hover {
@@ -246,6 +349,9 @@
                 overflow-x: auto;
                 scrollbar-width: none;
             }
+            .daybar[hidden] {
+                display: none;
+            }
             .daybar::-webkit-scrollbar {
                 display: none;
             }
@@ -295,6 +401,9 @@
                 background: var(--ink);
                 overflow-x: auto;
                 scrollbar-width: none;
+            }
+            .toolbar[hidden] {
+                display: none;
             }
             .toolbar::-webkit-scrollbar {
                 display: none;
@@ -518,7 +627,7 @@
             /* ================= LIST VIEW ================= */
             .lv {
                 overflow: auto;
-                max-height: calc(100vh - 210px);
+                max-height: calc(100vh - 210px - var(--tabbar-h));
                 padding: 0 18px 60px;
                 max-width: 680px;
                 margin: 0 auto;
@@ -659,7 +768,7 @@
                 /* a fixed height (not max-height) keeps the swipeable area full-size
        even when filtering leaves only one sparse lane — otherwise the box
        shrinks to hug the content and there's nothing to grab below it */
-                height: calc(100vh - 210px);
+                height: calc(100vh - 210px - var(--tabbar-h));
                 position: relative;
                 scrollbar-width: thin;
                 scrollbar-color: var(--line) transparent;
@@ -1263,6 +1372,78 @@
                 opacity: 0.9;
             }
 
+            /* ================= MAP ================= */
+            .map-view {
+                position: relative;
+                /* actual height is set from JS (mapSizeView) since it depends on
+       the real rendered header height, which differs mobile vs desktop */
+                height: 60vh;
+                overflow: hidden;
+                background: var(--surface);
+                /* we implement pinch/pan ourselves via pointer events, so claim
+       all touch gestures here instead of letting the browser try to scroll */
+                touch-action: none;
+                cursor: grab;
+            }
+            .map-view.panning {
+                cursor: grabbing;
+            }
+            /* only used for button-triggered zoom steps — pinch/drag stay
+   untransitioned so they can track the gesture frame-perfectly */
+            .map-view img.zoom-anim {
+                transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+            }
+            .map-view img {
+                position: absolute;
+                top: 0;
+                left: 0;
+                max-width: none;
+                transform-origin: 0 0;
+                user-select: none;
+                -webkit-user-drag: none;
+                will-change: transform;
+            }
+            .map-zoom-controls {
+                position: absolute;
+                right: 14px;
+                bottom: 14px;
+                z-index: 5;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .map-zoom-controls button {
+                width: 40px;
+                height: 40px;
+                border-radius: 999px;
+                border: 1.5px solid var(--line);
+                background: var(--surface);
+                color: var(--paper);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: var(--shadow);
+                transition: 0.15s;
+            }
+            .map-zoom-controls button:hover {
+                border-color: var(--muted);
+            }
+            .map-hint {
+                position: absolute;
+                left: 14px;
+                bottom: 14px;
+                z-index: 5;
+                font-family: "IBM Plex Mono";
+                font-size: 11px;
+                color: var(--faint);
+                background: var(--surface);
+                border: 1px solid var(--line);
+                border-radius: 999px;
+                padding: 6px 12px;
+                pointer-events: none;
+            }
+
             @media (max-width: 520px) {
                 :root {
                     --px-per-min: 3.2;
@@ -1289,7 +1470,23 @@
     <body>
         <header>
             <div class="masthead" id="masthead">
-                <div class="wordmark">VCO <em>/ Planner</em></div>
+                <div class="wordmark">VCO <em id="wordmarkSuffix">/ Planner</em></div>
+                <nav class="topnav" aria-label="Section">
+                    <button
+                        class="topnav-btn active"
+                        data-page="planner"
+                        aria-current="page"
+                    >
+                        <span class="material-symbols-outlined"
+                            >calendar_month</span
+                        >
+                        Planner
+                    </button>
+                    <button class="topnav-btn" data-page="map">
+                        <span class="material-symbols-outlined">map</span>
+                        Map
+                    </button>
+                </nav>
                 <div class="masthead-actions">
                     <button
                         class="search-toggle"
@@ -1386,6 +1583,42 @@
             <div class="tl" id="tl"></div>
             <div class="lv" id="lv" hidden></div>
         </div>
+
+        <div id="mapPage" hidden>
+            <div class="map-view" id="mapView">
+                <img
+                    src="images/map.png"
+                    alt="Vegan Camp Out site map"
+                    id="mapImg"
+                    draggable="false"
+                />
+                <div class="map-zoom-controls">
+                    <button id="mapZoomIn" aria-label="Zoom in">
+                        <span class="material-symbols-outlined">add</span>
+                    </button>
+                    <button id="mapZoomOut" aria-label="Zoom out">
+                        <span class="material-symbols-outlined">remove</span>
+                    </button>
+                    <button id="mapZoomReset" aria-label="Reset zoom">
+                        <span class="material-symbols-outlined"
+                            >crop_free</span
+                        >
+                    </button>
+                </div>
+                <div class="map-hint">Pinch or scroll to zoom</div>
+            </div>
+        </div>
+
+        <nav class="tabbar" id="tabbar" aria-label="Section">
+            <button class="tab-btn active" data-page="planner" aria-current="page">
+                <span class="material-symbols-outlined">calendar_month</span>
+                <span>Planner</span>
+            </button>
+            <button class="tab-btn" data-page="map">
+                <span class="material-symbols-outlined">map</span>
+                <span>Map</span>
+            </button>
+        </nav>
 
         <div class="scrim" id="scrim"></div>
         <div class="sheet" id="sheet"></div>
@@ -2616,6 +2849,7 @@
             let panelOpen = false;
             let openId = null;
             let searchQ = "";
+            let page = "planner"; // "planner" | "map"
 
             const PXM = () =>
                 parseFloat(
@@ -3421,13 +3655,270 @@
                 document.addEventListener(evt, (e) => e.preventDefault()),
             );
 
+            /* ---------------- PAGES (Planner / Map) ---------------- */
+            const plannerEls = [
+                document.getElementById("daybar"),
+                document.querySelector(".toolbar"),
+                document.querySelector(".tl-wrap"),
+            ];
+            const mapPageEl = document.getElementById("mapPage");
+            const wordmarkSuffix = document.getElementById("wordmarkSuffix");
+            function switchPage(p) {
+                page = p;
+                const isMap = page === "map";
+                plannerEls.forEach((el) => (el.hidden = isMap));
+                document.getElementById("panel").hidden = isMap || !panelOpen;
+                mapPageEl.hidden = !isMap;
+                document.getElementById("searchToggle").hidden = isMap;
+                document.querySelector("header").classList.toggle(
+                    "map-header",
+                    isMap,
+                );
+                wordmarkSuffix.textContent = isMap ? "/ Map" : "/ Planner";
+                // fully reset (not just blur) — otherwise a query could keep
+                // filtering the planner invisibly once the bar is hidden here
+                if (isMap) {
+                    searchQ = "";
+                    searchInput.value = "";
+                    searchClear.hidden = true;
+                    collapseSearch();
+                }
+                document
+                    .querySelectorAll(".topnav-btn, .tab-btn")
+                    .forEach((b) => {
+                        const on = b.dataset.page === page;
+                        b.classList.toggle("active", on);
+                        b.setAttribute("aria-current", on ? "page" : "false");
+                    });
+                if (isMap) mapFit();
+                render();
+            }
+            document
+                .querySelectorAll(".topnav-btn, .tab-btn")
+                .forEach((b) => (b.onclick = () => switchPage(b.dataset.page)));
+
+            /* ---------------- MAP (custom pinch/pan, capped at native 100%) ----------------
+   Site-wide pinch-zoom is disabled (see gesturestart block below), so the
+   map implements its own via pointer events: one finger pans, two pinch-
+   zoom, wheel zooms on desktop. Scale is clamped between "fits the
+   viewport" and 1 (the image's true pixel size) so it never looks blurry. */
+            const mapView = document.getElementById("mapView");
+            const mapImg = document.getElementById("mapImg");
+            let mapScale = 1,
+                mapMinScale = 1,
+                mapTx = 0,
+                mapTy = 0,
+                mapReady = false;
+            const mapPointers = new Map();
+            let mapPinchStartDist = 0,
+                mapPinchStartScale = 1,
+                mapPanStart = null;
+
+            function mapPointFromEvent(e) {
+                const r = mapView.getBoundingClientRect();
+                return { x: e.clientX - r.left, y: e.clientY - r.top };
+            }
+            function mapClampTranslate(scale, tx, ty) {
+                const vw = mapView.clientWidth,
+                    vh = mapView.clientHeight;
+                const iw = mapImg.naturalWidth * scale,
+                    ih = mapImg.naturalHeight * scale;
+                let minX, maxX, minY, maxY;
+                if (iw <= vw) minX = maxX = (vw - iw) / 2;
+                else {
+                    maxX = 0;
+                    minX = vw - iw;
+                }
+                if (ih <= vh) minY = maxY = (vh - ih) / 2;
+                else {
+                    maxY = 0;
+                    minY = vh - ih;
+                }
+                return {
+                    x: Math.min(maxX, Math.max(minX, tx)),
+                    y: Math.min(maxY, Math.max(minY, ty)),
+                };
+            }
+            function mapApply() {
+                mapImg.style.transform = `translate(${mapTx}px, ${mapTy}px) scale(${mapScale})`;
+            }
+            // sized from the real header height rather than a guessed constant,
+            // since the header is a different height on mobile vs desktop
+            function mapSizeView() {
+                const headerBottom = document
+                    .querySelector("header")
+                    .getBoundingClientRect().bottom;
+                const tabbarH = parseFloat(
+                    getComputedStyle(document.documentElement).getPropertyValue(
+                        "--tabbar-h",
+                    ),
+                ) || 0;
+                mapView.style.height = `calc(100vh - ${headerBottom}px - ${tabbarH}px)`;
+            }
+            function mapFit() {
+                mapSizeView();
+                if (!mapImg.naturalWidth) return;
+                const vw = mapView.clientWidth,
+                    vh = mapView.clientHeight;
+                mapMinScale = Math.min(
+                    vw / mapImg.naturalWidth,
+                    vh / mapImg.naturalHeight,
+                    1,
+                );
+                mapScale = mapMinScale;
+                mapTx = (vw - mapImg.naturalWidth * mapScale) / 2;
+                mapTy = (vh - mapImg.naturalHeight * mapScale) / 2;
+                mapApply();
+            }
+            function mapSetScale(newScale, cx, cy) {
+                newScale = Math.min(1, Math.max(mapMinScale, newScale));
+                const ratio = newScale / mapScale;
+                const tx = cx - (cx - mapTx) * ratio;
+                const ty = cy - (cy - mapTy) * ratio;
+                mapScale = newScale;
+                const c = mapClampTranslate(mapScale, tx, ty);
+                mapTx = c.x;
+                mapTy = c.y;
+                mapApply();
+            }
+            mapImg.addEventListener("load", () => {
+                mapReady = true;
+                if (page === "map") mapFit();
+            });
+            // the zoom buttons live inside mapView for positioning, so without this
+            // their pointerdown bubbles up and gets mistaken for a pan/pinch start —
+            // which then fights the button's own zoom on the next pointermove
+            document
+                .querySelector(".map-zoom-controls")
+                .addEventListener("pointerdown", (e) => e.stopPropagation());
+            mapView.addEventListener("pointerdown", (e) => {
+                mapView.setPointerCapture(e.pointerId);
+                mapPointers.set(e.pointerId, mapPointFromEvent(e));
+                mapView.classList.add("panning");
+                if (mapPointers.size === 1) {
+                    mapPanStart = { ...mapPointFromEvent(e), tx: mapTx, ty: mapTy };
+                } else if (mapPointers.size === 2) {
+                    const pts = [...mapPointers.values()];
+                    mapPinchStartDist = Math.hypot(
+                        pts[0].x - pts[1].x,
+                        pts[0].y - pts[1].y,
+                    );
+                    mapPinchStartScale = mapScale;
+                    mapPanStart = null;
+                }
+            });
+            mapView.addEventListener("pointermove", (e) => {
+                if (!mapPointers.has(e.pointerId)) return;
+                mapPointers.set(e.pointerId, mapPointFromEvent(e));
+                if (mapPointers.size === 2) {
+                    const pts = [...mapPointers.values()];
+                    const dist = Math.hypot(
+                        pts[0].x - pts[1].x,
+                        pts[0].y - pts[1].y,
+                    );
+                    const mid = {
+                        x: (pts[0].x + pts[1].x) / 2,
+                        y: (pts[0].y + pts[1].y) / 2,
+                    };
+                    if (mapPinchStartDist > 0)
+                        mapSetScale(
+                            mapPinchStartScale * (dist / mapPinchStartDist),
+                            mid.x,
+                            mid.y,
+                        );
+                } else if (mapPointers.size === 1 && mapPanStart) {
+                    const p = [...mapPointers.values()][0];
+                    const c = mapClampTranslate(
+                        mapScale,
+                        mapPanStart.tx + (p.x - mapPanStart.x),
+                        mapPanStart.ty + (p.y - mapPanStart.y),
+                    );
+                    mapTx = c.x;
+                    mapTy = c.y;
+                    mapApply();
+                }
+            });
+            function mapPointerEnd(e) {
+                mapPointers.delete(e.pointerId);
+                mapPinchStartDist = 0;
+                if (mapPointers.size === 1) {
+                    const p = [...mapPointers.values()][0];
+                    mapPanStart = { x: p.x, y: p.y, tx: mapTx, ty: mapTy };
+                } else {
+                    mapPanStart = null;
+                    mapView.classList.remove("panning");
+                }
+            }
+            mapView.addEventListener("pointerup", mapPointerEnd);
+            mapView.addEventListener("pointercancel", mapPointerEnd);
+            mapView.addEventListener("pointerleave", (e) => {
+                if (mapPointers.has(e.pointerId)) mapPointerEnd(e);
+            });
+            mapView.addEventListener(
+                "wheel",
+                (e) => {
+                    e.preventDefault();
+                    const p = mapPointFromEvent(e);
+                    mapSetScale(
+                        mapScale * Math.exp(-e.deltaY * 0.0018),
+                        p.x,
+                        p.y,
+                    );
+                },
+                { passive: false },
+            );
+            // Button-driven zoom steps animate smoothly (a gentle step, eased in);
+            // pinch/drag stay instant so they can track the gesture frame-perfectly.
+            let mapAnimTimer = null;
+            function mapAnimated(run) {
+                mapImg.classList.add("zoom-anim");
+                run();
+                clearTimeout(mapAnimTimer);
+                mapAnimTimer = setTimeout(
+                    () => mapImg.classList.remove("zoom-anim"),
+                    220,
+                );
+            }
+            mapView.addEventListener("dblclick", (e) => {
+                const p = mapPointFromEvent(e);
+                mapAnimated(() =>
+                    mapScale < 1 - 0.001
+                        ? mapSetScale(1, p.x, p.y)
+                        : mapFit(),
+                );
+            });
+            document.getElementById("mapZoomIn").onclick = () =>
+                mapAnimated(() =>
+                    mapSetScale(
+                        mapScale * 1.25,
+                        mapView.clientWidth / 2,
+                        mapView.clientHeight / 2,
+                    ),
+                );
+            document.getElementById("mapZoomOut").onclick = () =>
+                mapAnimated(() =>
+                    mapSetScale(
+                        mapScale / 1.25,
+                        mapView.clientWidth / 2,
+                        mapView.clientHeight / 2,
+                    ),
+                );
+            document.getElementById("mapZoomReset").onclick = () =>
+                mapAnimated(mapFit);
+            window.addEventListener("resize", () => {
+                if (page === "map") mapFit();
+            });
+
             /* ---------------- BOOT ---------------- */
             function render() {
+                if (page !== "planner") return;
                 renderDaybar();
                 renderFilters();
                 renderTimeline();
             }
-            window.addEventListener("resize", renderTimeline);
+            window.addEventListener("resize", () => {
+                if (page === "planner") renderTimeline();
+            });
             applyTheme();
             render();
             loadState();
