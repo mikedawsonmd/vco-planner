@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta
             name="viewport"
-            content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
         />
         <meta
             name="description"
@@ -68,6 +68,9 @@
                 font-family: "Inter", sans-serif;
                 -webkit-font-smoothing: antialiased;
                 overscroll-behavior-y: none;
+                /* backstop for the viewport meta tag — some mobile browsers still
+       allow pinch-zoom gestures regardless of user-scalable=no */
+                touch-action: pan-x pan-y;
             }
             body {
                 transition:
@@ -2595,7 +2598,9 @@
             });
 
             /* ---------------- STATE ---------------- */
-            let day = festNow()?.day || "SAT"; // during the festival, open on today
+            // Live festival day always wins; otherwise loadState() below restores
+            // whichever day was last viewed, falling back to day one pre-festival.
+            let day = festNow()?.day || DAYS[0];
             let scrub = null; // scrubber time in minutes, null = follow live time
             let scrubbing = false; // true while the needle is being dragged
             let scrolledDay = null; // last day auto-scrolled to the needle
@@ -2671,6 +2676,14 @@
                         }
                         if (typeof s.favOnly === "boolean")
                             favOnly = s.favOnly;
+                        // once the festival is actually live, today always wins over
+                        // whatever day was last viewed
+                        if (
+                            typeof s.day === "string" &&
+                            DAYS.includes(s.day) &&
+                            !festNow()
+                        )
+                            day = s.day;
                     } catch (e) {}
                 }
                 applyTheme();
@@ -2678,6 +2691,7 @@
             }
             function saveState() {
                 const v = JSON.stringify({
+                    day,
                     favs: [...favs],
                     theme,
                     view,
@@ -2793,6 +2807,7 @@
                             if (day !== b.dataset.d) scrub = null;
                             day = b.dataset.d;
                             render();
+                            saveState();
                         }),
                 );
             }
@@ -3395,6 +3410,13 @@
                 document.getElementById("sheetFav").onclick = () =>
                     toggleFav(e.id);
             }
+
+            /* Belt-and-braces pinch-zoom block: touch-action + the viewport meta
+   tag cover most browsers, but older iOS Safari fires its own non-standard
+   gesture events for two-finger pinches regardless of either setting. */
+            ["gesturestart", "gesturechange", "gestureend"].forEach((evt) =>
+                document.addEventListener(evt, (e) => e.preventDefault()),
+            );
 
             /* ---------------- BOOT ---------------- */
             function render() {
