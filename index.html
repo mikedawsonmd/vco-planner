@@ -656,7 +656,10 @@
             }
             .tl {
                 overflow: auto;
-                max-height: calc(100vh - 210px);
+                /* a fixed height (not max-height) keeps the swipeable area full-size
+       even when filtering leaves only one sparse lane — otherwise the box
+       shrinks to hug the content and there's nothing to grab below it */
+                height: calc(100vh - 210px);
                 position: relative;
                 scrollbar-width: thin;
                 scrollbar-color: var(--line) transparent;
