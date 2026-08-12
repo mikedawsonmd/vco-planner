@@ -235,6 +235,13 @@
             @media (min-width: 760px) {
                 .topnav {
                     display: flex;
+                    /* center against the masthead itself, not the flex gap
+                       between the wordmark and actions — those differ in width
+                       (and the wordmark suffix changes per page), which would
+                       otherwise let the toggle drift left/right */
+                    position: absolute;
+                    left: 50%;
+                    transform: translateX(-50%);
                 }
                 .tabbar {
                     display: none;
