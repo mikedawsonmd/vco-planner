@@ -6,7 +6,7 @@
    Bump VERSION whenever you change the schedule or the app so old
    caches are cleared. */
 
-const VERSION = 'vco-planner-v9';
+const VERSION = 'vco-planner-v10';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './images/map.png'];
 
 self.addEventListener('install', (e) => {
@@ -46,11 +46,22 @@ self.addEventListener('fetch', (e) => {
   }
 
   // Fonts and everything else: cache first, then network, then give up quietly.
+  // Google's font CSS (fonts.googleapis.com) and the icon/font files it pulls
+  // in (fonts.gstatic.com) are fetched cross-origin in no-cors mode, so they
+  // come back as opaque responses (type 'opaque', status 0). We cache those
+  // too — otherwise the Material Symbols icons vanish offline.
+  const url = new URL(req.url);
+  const isGoogleFont =
+    url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
+
   e.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
       return fetch(req).then((res) => {
-        if (res && res.status === 200 && (res.type === 'basic' || res.type === 'cors')) {
+        const cacheable =
+          (res.status === 200 && (res.type === 'basic' || res.type === 'cors')) ||
+          (isGoogleFont && res.type === 'opaque');
+        if (res && cacheable) {
           const copy = res.clone();
           caches.open(VERSION).then((c) => c.put(req, copy));
         }
